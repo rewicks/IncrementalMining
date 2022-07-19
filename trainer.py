@@ -20,10 +20,18 @@ def main(args):
     languages = Languages(sqlconn)
     # langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     env = GetEnv(args.config_file, languages, args.host_name)
-    # env = Env(sqlconn, args.host_name)
 
-    # build desired state
-    
+    # build start state -- rachel
+
+    # load model 
+
+
+    # training loop
+    # while true:
+        # decision = model.decide(current_state.get_features()) --> .get_features() will return number of monolingual documents in each language
+        # new_state = state.update(decision)
+        # reward = model.reinforce(current_state, new_state)
+        # current_state = new_state
 
 
     # build desired decider
