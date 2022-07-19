@@ -7,7 +7,7 @@ from state import (State,
                 create_start_state_from_node,
                 transition_on_lang_prob)
 from environment import Env, GetEnv
-
+from reinforce import ReinforceDecider
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -24,14 +24,18 @@ def main(args):
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     env = GetEnv(args.config_file, languages, args.host_name)
 
-    # build start state -- rachel
-    start_state = create_start_state_from_node(env.rootNode)
+    start_state = create_start_state_from_node(env.rootNode, langIds)
+    decider = ReinforceDecider(args, env, transition_on_lang_prob)
 
-    decision = torch.tensor([0.3, 0.7])
+    ### some testing
+    probs = torch.tensor([0.3, 0.7])
+    action = torch.argmax(probs)
+    new_state = transition_on_lang_prob(env, start_state, action)
 
-    new_state = transition_on_lang_prob(env, start_state, decision, langIds)
-    
-    pass
+    # Start Training
+    decider.train(start_state)
+
+
     # load model 
     # model = load_model("beep boop")
 
