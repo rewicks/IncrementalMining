@@ -1,30 +1,248 @@
-class SimulatedEnvironment:
+import numpy as np
+import hashlib
+import sys
+from tldextract import extract
+import pickle
+import datetime
+import os, sys, logging
+
+from utils import MySQL
+
+
+######################################################################################
+
+
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=os.environ.get("LOGLEVEL", "INFO").upper(),
+    stream=sys.stderr,
+)
+logger = logging.getLogger("SmartCrawler")
+
+
+######################################################################################
+def GetEnvs(configFile, languages, urls):
+    ret = []
+    for url in urls:
+        env = GetEnv(configFile, languages, url)
+        ret.append(env)
+    return ret
+
+######################################################################################
+def GetEnv(configFile, languages, url):
+    '''
+    Function will either build the environment of desired domain or retrieve from
+    a pickled file. Building it will also save a pickled copy under pickled_domains/
+    '''
+    domain = extract(url).domain
+    filePath = 'pickled_domains/'+domain
+
+    # if the file doesn't exist, create the environment from MySQL
+    if not os.path.exists(filePath):
+        logging.info(f"mysql load\t{url}")
+        sqlconn = MySQL(configFile)
+        env = Env(sqlconn, url)
+
+        os.makedirs("pickled_domains", exist_ok=True)
+        sys.setrecursionlimit(9999999)
+        with open('pickled_domains/'+domain, 'wb') as f:
+            pickle.dump(env, f)
+    # otherwise, load from pickled file
+    else:
+        logging.info(f"unpickle\t{url}")
+        with open(filePath, 'rb') as f:
+            env = pickle.load(f)
+    # change language of start node. 0 = stop
+    env.nodes[sys.maxsize].lang = languages.GetLang("None")
+    logging.info(f"\tlen(env.nodes)\t{env.nodes}\t{env.numAligned}\taligned docs")
+
+    logging.info(f"env created\t{url}")
+    return env
+
+######################################################################################
+def GetVistedSiblings(urlId, parentNode, visited):
+    ret = []
+
+    #print("parentNode", urlId)
+    for link in parentNode.links:
+        sibling = link.childNode
+        if sibling.urlId != urlId:
+            #print("   link", sibling.urlId, sibling.alignedDoc)
+            if sibling.urlId in visited:
+                # sibling has been crawled
+                ret.append(sibling.urlId)      
+
+    return ret
+
+######################################################################################
+def GetNodeMatched(node, visited):
+    ret = 0
+    assert(node.urlId in visited)
+    if node.alignedNode is not None:
+        if node.alignedNode.urlId in visited:
+            # sibling has been matched
+            ret = 1      
+
+    return ret
+
+######################################################################################
+def GetMatchedSiblings(urlId, parentNode, visited):
+    ret = []
+
+    #print("parentNode", urlId)
+    for link in parentNode.links:
+        sibling = link.childNode
+        if sibling.urlId != urlId:
+            #print("   link", sibling.urlId, sibling.alignedDoc)
+            if sibling.urlId in visited:
+                # sibling has been crawled
+                if sibling.alignedNode is not None and sibling.alignedNode.urlId in visited:
+                    # sibling has been matched
+                    ret.append(sibling.urlId)      
+
+    return ret
+
+######################################################################################
+def NumParallelDocs(env, visited):
+    ret = 0
+    for urlId in visited:
+        node = env.nodes[urlId]
+        #print("node", node.Debug())
+
+        if node.alignedNode is not None and node.alignedNode.urlId in visited:
+            ret += 1
+
+    return ret
+
+######################################################################################
+def NormalizeURL(url):
+    url = url.lower()
+    ind = url.find("#")
+    if ind >= 0:
+        url = url[:ind]
+        #print("pageURL", pageURL)
+    #if url[-5:] == ".html":
+    #    url = url[:-5] + ".htm"
+    #if url[-9:] == "index.htm":
+    #    url = url[:-9]
+    if url[-1:] == "/":
+        url = url[:-1]
+
+    if url[:7] == "http://":
+        #print("   strip protocol1", url, url[7:])
+        url = url[7:]
+    elif url[:8] == "https://":
+        #print("   strip protocol2", url, url[8:])
+        url = url[8:]
+
+    return url
+
+######################################################################################
+class Link:
+    def __init__(self, text, textLang, parentNode, childNode):
+        self.text = text 
+        self.textLang = textLang 
+        self.parentNode = parentNode
+        self.childNode = childNode
+
+######################################################################################
+class Node:
+    def __init__(self, urlId, url, docIds, langIds, crawlDates, redirectId):
+        assert(len(docIds) == len(langIds))
+        self.urlId = urlId # hash value
+        self.url = url # plain text
+        self.docIds = set(docIds)
+
+        self.crawlDate = datetime.datetime.min
+        if crawlDates is not None and len(crawlDates) > 0:
+            self.crawlDate = crawlDates[0]
+
+        self.redirectId = redirectId
+        self.redirect = None
+
+        self.links = set()
+        self.lang = 0 if len(langIds) == 0 else langIds[0]
+        self.alignedNode = None
+
+        self.normURL = None
+        self.depth = sys.maxsize
+
+        #print("self.lang", self.lang, langIds, urlId, url, docIds)
+        #for lang in langIds:
+        #    assert(self.lang == lang)
+
+    def CreateLink(self, text, textLang, childNode):            
+        link = Link(text, textLang, self, childNode)
+        self.links.add(link)
+
+    def GetLinks(self, visited, params):
+        ret = []
+        for link in self.links:
+            childNode = link.childNode
+            childURLId = childNode.urlId
+            #print("   ", childNode.Debug())
+            if childURLId != self.urlId and childURLId not in visited:
+                ret.append(link)
+        #print("   childIds", childIds)
+
+        return ret
+
+    def Recombine(self, loserNode):
+        assert (loserNode is not None)
+        # print("Recombining")
+        # print("   ", self.Debug())
+        # print("   ", loserNode.Debug())
+
+        self.docIds.update(loserNode.docIds)
+
+        for link in loserNode.links:
+            link.parentNode = self
+        self.links.update(loserNode.links)
+
+        if self.lang == 0:
+            if loserNode.lang != 0:
+                self.lang = loserNode.lang
+        else:
+            if loserNode.lang != 0:
+                assert (self.lang == loserNode.lang)
+
+        if self.alignedNode is None:
+            if loserNode.alignedNode is not None:
+                self.alignedNode = loserNode.alignedNode
+        else:
+            if loserNode.alignedNode is not None:
+                print(self.alignedNode.Debug())
+                print(loserNode.alignedNode.Debug())
+                assert (self.alignedNode == loserNode.alignedNode)
+
+                        
+######################################################################################
+class Env:
     def __init__(self, sqlconn, url):
-        self.rootURL = url
+        self.rootURL = url # hostname
         self.numAligned = 0
         self.nodes = {} # urlId -> Node
-        self.url2urlId = {}
-        self.maxLangId = 0
+        self.url2urlId = {} # hash value for urls?
+        self.maxLangId = 0 # langids to consider
 
         unvisited = {} # urlId -> Node
         visited = {} # urlId -> Node
         rootURLId = self.Url2UrlId(sqlconn, url)
+
         self.rootNode = self.CreateNode(sqlconn, visited, unvisited, rootURLId, url)
         self.CreateGraphFromDB(sqlconn, visited, unvisited)
-        print("CreateGraphFromDB", len(visited))
-        #for node in visited.values():
-        #    print(node.Debug())
+        logging.info(f"CreateGraphFromDB {len(visited)}")
 
         self.ImportURLAlign(sqlconn, visited)
 
-        #print("rootNode", rootNode.Debug())
-        print("Recombine")
+        logging.info("Recombine")
         normURL2Node = {}
         self.Recombine(visited, normURL2Node)
         
         self.rootNode = normURL2Node[self.rootNode.normURL]
         assert(self.rootNode is not None)
-        print("rootNode", self.rootNode.Debug())
+        # print("rootNode", self.rootNode.Debug())
 
         self.PruneNodes(self.rootNode)
 
@@ -44,10 +262,11 @@ class SimulatedEnvironment:
         print("nodes", len(self.nodes), 
             "numAligned,", self.numAligned, 
             "maxLangId", self.maxLangId)
-        for node in self.nodes.values():
-            print(node.Debug())
+        # for node in self.nodes.values():
+        #     print(node.Debug())
 
         print("graph created")
+        
 
     def CalcDepth(self, node):
         links = []
@@ -252,7 +471,11 @@ class SimulatedEnvironment:
         return res[0]
 
     def Url2UrlId(self, sqlconn, url):
-        #print("url",url)
+        '''
+            Hashes the plain text of the URL
+            Searches MySQL table for URL based on hash
+            Returns result
+        '''
         c = hashlib.md5()
         c.update(url.lower().encode())
         hashURL = c.hexdigest()
@@ -264,7 +487,9 @@ class SimulatedEnvironment:
         val = (hashURL,)
         sqlconn.mycursor.execute(sql, val)
         res = sqlconn.mycursor.fetchone()
-        assert (res is not None)
+        if res is None:
+            logging.error(f"URL {url} with hash {hashURL} not found in MySQL table")
+            sys.exit()
 
         return res[0]
 
@@ -277,3 +502,5 @@ class SimulatedEnvironment:
             if nextNode.alignedDoc > 0:
                 ret += 1
         return ret
+
+
