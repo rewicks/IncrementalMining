@@ -6,14 +6,6 @@ This file will contain:
 
 # Base class for all other states
 class State():
-    def __init__(self):
-        pass
-
-class MonolingualState(State):
-    def __init__(self):
-        super(MonolingualState, self).__init__()
-
-class LargeState(State):
     def __init__(self, link_queue_limit=1000):
         super(LargeState, self).__init__()
 
@@ -34,27 +26,26 @@ class LargeState(State):
             self.link_queue.pop(0)
 
 
-
 ############################################################
 #                     STATE MEMBERS                        # 
 ############################################################
 
 class Link:
-    def __init__():
+    def __init__(self):
         pass
 
 class MonolingualDocument:
-    def __init__():
+    def __init__(self):
         pass
 
 class ParallelDocument:
-    def __init__():
+    def __init__(self):
         pass
 
 class RewardHistory:
-    def __init__():
+    def __init__(self):
         pass
 
 class DecisionHistory:
-    def __init__():
+    def __init__(self):
         pass

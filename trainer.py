@@ -22,6 +22,17 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
     # env = Env(sqlconn, args.host_name)
 
+    # build desired state
+    
+
+
+    # build desired decider
+
+
+
+    # build crawler
+
+
     start_state = State()
     env.rootNode
     pass

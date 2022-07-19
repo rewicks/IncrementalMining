@@ -3,16 +3,27 @@ This file will contain:
     - the SmartCrawler class
 
 '''
+import torch
+import torch.nn as nn
+
+
 from state import State
 
 
-class SmartCrawler:
-    def __init__():
-        self.state = State()
+
+class SmartCrawler():
+    def __init__(self, state):
+        self.state = state
+        self.decider = Decider()
 
     def get_features():
         # this would call all of the features on the state
         pass
+
+
+class Decider(nn.Module):
+    def __init__(self):
+        super(Decider, self).__init__()
 
 
 
@@ -38,4 +49,4 @@ def stop_processing(state):
     # I'm not sure this actually has to be a function?
     # sends signal to stop?
     # returns a null state?
-
+    pass
