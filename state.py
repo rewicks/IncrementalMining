@@ -16,9 +16,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("SmartCrawler")
 
+from collections import Counter
+import numpy as np
+
 # Base class for all other states
 class State():
-    def __init__(self, link_queue_limit=1000):
+    def __init__(self, languages, link_queue_limit=1000):
 
         # unless people protest I think a list of size k is
         # actually simpler than a queue
@@ -30,19 +33,38 @@ class State():
         self.monolingual_documents = []
         self.parallel_documents = []
 
+        self.languages = languages
+
     def add_link(self, link):
         self.link_queue.append(link)
         if len(self.link_queue) > self.link_queue_limit:
             self.link_queue.pop(0)
 
+    def get_features(self):
+
+        # monolingual documents
+        doc_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language in self.languages])
+        doc_targeted_langs = [doc_targeted_language_counter[lang] for lang in self.languages]
+        doc_non_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language not in self.languages])
+        doc_non_targeted_langs = [sum(doc_non_targeted_language_counter)]
+
+
+        # link counters
+        link_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language in self.languages])
+        link_targeted_langs = [link_targeted_language_counter[lang] for lang in self.languages]
+        link_non_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language not in self.languages])
+        link_non_targeted_langs = [sum(link_non_targeted_language_counter)]
+
+        return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
+
     
-def transition_on_lang_prob(env, state, decision, langIds):
+def transition_on_lang_prob(env, state, decision):
     # langid = torch.argmax(decision, dim=0)
-    langid = langIds[torch.argmax(decision, dim=0)]
+    # langid = langIds[torch.argmax(decision, dim=0)]
 
     link_to_crawl = None
     for li in state.link_queue:
-        if li.linkLang == langid:
+        if li.language == decision:
             link_to_crawl = li
             break
     
@@ -52,7 +74,7 @@ def transition_on_lang_prob(env, state, decision, langIds):
     
     crawled_child = env.crawl_child(link_to_crawl.id)
 
-    new_state = State(link_queue_limit = state.link_queue_limit)
+    new_state = State(languages=state.languages, link_queue_limit = state.link_queue_limit)
     for li in state.link_queue:
         if li.url != link_to_crawl.url:
             new_state.add_link(li)
@@ -67,7 +89,7 @@ def transition_on_lang_prob(env, state, decision, langIds):
     for parallel_doc in state.parallel_documents:
         new_state.append(parallel_doc)
 
-    crawled_doc = MonolingualDocument(docid=crawled_child.urlId)
+    crawled_doc = MonolingualDocument(docid=crawled_child.urlId, langid=crawled_child.lang)
     aligned = False
     for monolingual_doc in state.monolingual_documents:
         if environment.isParallel(env, crawled_doc, monolingual_doc):
@@ -84,11 +106,11 @@ def transition_on_lang_prob(env, state, decision, langIds):
     return new_state
 
 
-def create_start_state_from_node(root, link_queue_limit=1000):
-    state = State(link_queue_limit=link_queue_limit)
+def create_start_state_from_node(root, languages, link_queue_limit=1000):
+    state = State(languages, link_queue_limit=link_queue_limit)
 
     # update with the only crawled page
-    root_document = MonolingualDocument(docid=root.urlId)
+    root_document = MonolingualDocument(docid=root.urlId, langid=root.lang)
     state.monolingual_documents.append(root_document)
 
     # add all children
@@ -113,13 +135,15 @@ class Link():
                         link_url: str,
                         link_url_id: int):
         self.link_text = link_text
-        self.linkLang = link_text_lang
+        self.language = link_text_lang
         self.url = link_url
         self.id = link_url_id
 
 class MonolingualDocument():
-    def __init__(self, docid):
+    def __init__(self, docid, langid):
         self.docid = docid
+        self.language = langid
+
 
 class ParallelDocument:
     def __init__(self, id=None):

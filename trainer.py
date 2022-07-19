@@ -7,7 +7,7 @@ from state import (State,
                 create_start_state_from_node,
                 transition_on_lang_prob)
 from environment import Env, GetEnv
-
+from reinforce import ReinforceDecider
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -23,15 +23,36 @@ def main(args):
     languages = Languages(sqlconn)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     env = GetEnv(args.config_file, languages, args.host_name)
+<<<<<<< HEAD
+=======
+    # env = Env(sqlconn, args.host_name)
+>>>>>>> 5fcd60bb80f30fa4041773683a56bbc13ef5ba6f
+
+    start_state = create_start_state_from_node(env.rootNode, langIds)
+    decider = ReinforceDecider(args, env, transition_on_lang_prob)
+
+    ### some testing
+    probs = torch.tensor([0.3, 0.7])
+    action = torch.argmax(probs)
+    new_state = transition_on_lang_prob(env, start_state, action)
+
+    # Start Training
+    decider.train(start_state)
+
+
+<<<<<<< HEAD
+=======
+    # build desired decider
+    def env_step(action, state):
+        return state # newstate
+
+    decider = ReinforceDecider(args, env_step)
 
     # build start state -- rachel
-    start_state = create_start_state_from_node(env.rootNode)
+    start_state = State()
+    env.rootNode
 
-    decision = torch.tensor([0.3, 0.7])
-
-    new_state = transition_on_lang_prob(env, start_state, decision, langIds)
-    
-    pass
+>>>>>>> 5fcd60bb80f30fa4041773683a56bbc13ef5ba6f
     # load model 
     # model = load_model("beep boop")
 
@@ -42,6 +63,13 @@ def main(args):
         # reward = model.reinforce(current_state, new_state)
         # current_state = new_state
 
+<<<<<<< HEAD
+=======
+    # Start Training
+    decider.train(start_state)
+
+    pass
+>>>>>>> 5fcd60bb80f30fa4041773683a56bbc13ef5ba6f
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
