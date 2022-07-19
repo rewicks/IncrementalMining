@@ -9,16 +9,16 @@ from collections import Counter
 # Base class for all other states
 class State():
     def __init__(self, link_queue_limit=1000):
-        super(LargeState, self).__init__()
+        super(State, self).__init__()
 
         # unless people protest I think a list of size k is
         # actually simpler than a queue
         self.link_queue = []
-        self.link_queue_limit
+        self.link_queue_limit = link_queue_limit
 
         # these actually might be *too* large to keep, so maybe
         # just keep metadata from them
-        self.monolingual_documents = []
+        self.monolingual_documents = [MonolingualDocument('en'), MonolingualDocument('fr'), MonolingualDocument('other')]
         self.parallel_documents = []
 
     def add_children_links(self, links):
@@ -26,7 +26,7 @@ class State():
         while len(self.link_queue) > self.link_queue_limit:
             self.link_queue.pop(0)
 
-    def get_summary_state(self):
+    def get_features(self):
         language_counter = Counter([x.language for x in self.monolingual_documents])
         return [y[1] for y in sorted(language_counter.most_common(), key = lambda x: x[0])]
 

@@ -4,7 +4,7 @@ import os, sys, logging
 from utils import MySQL, Languages
 from state import State
 from environment import Env, GetEnv
-
+from reinforce import ReinforceDecider
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -39,7 +39,7 @@ def main(args):
 
     # Start Training
     decider.train(start_state)
-    
+
     pass
 
 if __name__ == "__main__":
