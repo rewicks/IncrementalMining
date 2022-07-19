@@ -109,11 +109,12 @@ def isParallel(env, doc1, doc2):
     doc1_node = env.nodes[doc1.docid]
     doc2_node = env.nodes[doc2.docid]
     
-    if doc1_node.alignedNode.urlId == doc2_node.alignedNode.urlId:
-        return True
-    else:
-        return False
-
+    if doc1_node.alignedNode is not None and doc2_node.alignedNode is not None:
+        if doc1_node.alignedNode.urlId == doc2_node.alignedNode.urlId:
+            return True
+        else:
+            return False
+    return False
 
 
 def NumParallelDocs(env, visited):
@@ -482,7 +483,7 @@ class Env:
 
         return res[0]
 
-    def Url2UrlId(self, sqlconn, url):
+    def Url2UrlId(self, sqlconn=None, url=None):
         '''
             Hashes the plain text of the URL
             Searches MySQL table for URL based on hash
@@ -503,7 +504,12 @@ class Env:
             logging.error(f"URL {url} with hash {hashURL} not found in MySQL table")
             sys.exit()
 
+        self.url2urlId[hashURL] = res[0]
         return res[0]
+
+    def crawl_child(self, id):
+        child_node = self.nodes[id]
+        return child_node
 
     ########################################################################
     def GetNumberAligned(self, path):

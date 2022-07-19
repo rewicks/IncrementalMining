@@ -1,8 +1,11 @@
 import argparse
 import os, sys, logging
+import torch
 
 from utils import MySQL, Languages
-from state import State, create_start_state_from_node
+from state import (State, 
+                create_start_state_from_node,
+                transition_on_lang_prob)
 from environment import Env, GetEnv
 
 
@@ -18,14 +21,19 @@ logger = logging.getLogger("SmartCrawler")
 def main(args):
     sqlconn = MySQL(args.config_file)
     languages = Languages(sqlconn)
-    # langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
+    langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     env = GetEnv(args.config_file, languages, args.host_name)
 
     # build start state -- rachel
     start_state = create_start_state_from_node(env.rootNode)
 
+    decision = torch.tensor([0.3, 0.7])
+
+    new_state = transition_on_lang_prob(env, start_state, decision, langIds)
+    
+    pass
     # load model 
-    model = load_model("beep boop")
+    # model = load_model("beep boop")
 
     # training loop
     # while true:
