@@ -2,7 +2,7 @@ import argparse
 import os, sys, logging
 
 from utils import MySQL, Languages
-from state import State
+from state import State, create_start_state_from_node
 from environment import Env, GetEnv
 
 
@@ -22,11 +22,10 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
 
     # build start state -- rachel
-    start_state = State()
-    env.rootNode
+    start_state = create_start_state_from_node(env.rootNode)
 
     # load model 
-
+    model = load_model("beep boop")
 
     # training loop
     # while true:

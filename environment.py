@@ -104,6 +104,18 @@ def GetMatchedSiblings(urlId, parentNode, visited):
     return ret
 
 ######################################################################################
+    
+def isParallel(env, doc1, doc2):
+    doc1_node = env.nodes[doc1.docid]
+    doc2_node = env.nodes[doc2.docid]
+    
+    if doc1_node.alignedNode.urlId == doc2_node.alignedNode.urlId:
+        return True
+    else:
+        return False
+
+
+
 def NumParallelDocs(env, visited):
     ret = 0
     for urlId in visited:
