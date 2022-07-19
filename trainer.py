@@ -23,18 +23,23 @@ def main(args):
     # env = Env(sqlconn, args.host_name)
 
     # build desired state
-    
 
 
     # build desired decider
+    def env_step(action, state):
+        return state # newstate
 
-
+    decider = ReinforceDecider(args, env_step)
 
     # build crawler
 
 
     start_state = State()
     env.rootNode
+
+    # Start Training
+    decider.train(start_state)
+    
     pass
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ This file will contain:
     - things that occur within a state
 """
 
+from collections import Counter
+
 # Base class for all other states
 class State():
     def __init__(self, link_queue_limit=1000):
@@ -19,12 +21,14 @@ class State():
         self.monolingual_documents = []
         self.parallel_documents = []
 
-
     def add_children_links(self, links):
         self.link_queue += links
         while len(self.link_queue) > self.link_queue_limit:
             self.link_queue.pop(0)
 
+    def get_summary_state(self):
+        language_counter = Counter([x.language for x in self.monolingual_documents])
+        return [y[1] for y in sorted(language_counter.most_common(), key = lambda x: x[0])]
 
 ############################################################
 #                     STATE MEMBERS                        # 
@@ -35,8 +39,8 @@ class Link:
         pass
 
 class MonolingualDocument:
-    def __init__(self):
-        pass
+    def __init__(self, language):
+        self.language = language
 
 class ParallelDocument:
     def __init__(self):
