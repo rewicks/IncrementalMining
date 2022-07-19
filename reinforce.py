@@ -76,7 +76,6 @@ class ReinforceDecider:
                 action = self.get_action_from_predictions(action_probs, features)
                 new_state = self.env_step(action, features)
                 reward, done = self.get_reward(action, features, new_state)
-
                 self.policy.rewards.append(reward)
                 ep_reward += reward
                 if done:
@@ -99,4 +98,7 @@ class ReinforceDecider:
         state = torch.from_numpy(state).float().unsqueeze(0)
         state = state.to(self.device)
         probs = self.policy(state)
-        return state
+        m = Categorical(F.softmax(probs, dim=1))
+        action = m.sample()
+        self.policy.saved_log_probs.append(m.log_prob(action))
+        return probs
