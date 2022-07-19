@@ -23,6 +23,10 @@ def main(args):
     languages = Languages(sqlconn)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     env = GetEnv(args.config_file, languages, args.host_name)
+<<<<<<< HEAD
+=======
+    # env = Env(sqlconn, args.host_name)
+>>>>>>> 5fcd60bb80f30fa4041773683a56bbc13ef5ba6f
 
     start_state = create_start_state_from_node(env.rootNode, langIds)
     decider = ReinforceDecider(args, env, transition_on_lang_prob)
@@ -36,6 +40,19 @@ def main(args):
     decider.train(start_state)
 
 
+<<<<<<< HEAD
+=======
+    # build desired decider
+    def env_step(action, state):
+        return state # newstate
+
+    decider = ReinforceDecider(args, env_step)
+
+    # build start state -- rachel
+    start_state = State()
+    env.rootNode
+
+>>>>>>> 5fcd60bb80f30fa4041773683a56bbc13ef5ba6f
     # load model 
     # model = load_model("beep boop")
 
@@ -46,6 +63,13 @@ def main(args):
         # reward = model.reinforce(current_state, new_state)
         # current_state = new_state
 
+<<<<<<< HEAD
+=======
+    # Start Training
+    decider.train(start_state)
+
+    pass
+>>>>>>> 5fcd60bb80f30fa4041773683a56bbc13ef5ba6f
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
