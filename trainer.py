@@ -22,6 +22,8 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
 
     # build start state -- rachel
+    start_state = State()
+    env.rootNode
 
     # load model 
 
@@ -33,17 +35,6 @@ def main(args):
         # reward = model.reinforce(current_state, new_state)
         # current_state = new_state
 
-
-    # build desired decider
-
-
-
-    # build crawler
-
-
-    start_state = State()
-    env.rootNode
-    pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
