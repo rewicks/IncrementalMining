@@ -31,11 +31,19 @@ def main(args):
 
     decider = ReinforceDecider(args, env_step)
 
-    # build crawler
-
-
+    # build start state -- rachel
     start_state = State()
     env.rootNode
+
+    # load model 
+
+
+    # training loop
+    # while true:
+        # decision = model.decide(current_state.get_features()) --> .get_features() will return number of monolingual documents in each language
+        # new_state = state.update(decision)
+        # reward = model.reinforce(current_state, new_state)
+        # current_state = new_state
 
     # Start Training
     decider.train(start_state)
