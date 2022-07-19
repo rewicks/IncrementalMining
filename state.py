@@ -5,6 +5,7 @@ This file will contain:
 """
 
 from collections import Counter
+import numpy as np
 
 # Base class for all other states
 class State():
@@ -28,7 +29,9 @@ class State():
 
     def get_features(self):
         language_counter = Counter([x.language for x in self.monolingual_documents])
-        return [y[1] for y in sorted(language_counter.most_common(), key = lambda x: x[0])]
+        all_monolingual =  [y[1] for y in sorted(language_counter.most_common(), key = lambda x: x[0])]
+        viewed_monolingual = [0 for y in sorted(language_counter.most_common(), key = lambda x: x[0])]
+        return np.array([all_monolingual, viewed_monolingual])
 
 ############################################################
 #                     STATE MEMBERS                        # 

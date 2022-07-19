@@ -20,7 +20,7 @@ torch.manual_seed(args['seed'])
 class Policy(nn.Module):
     def __init__(self, feature_size, action_size, device):
         super(Policy, self).__init__()
-        self.affine1 = nn.Linear(feature_size, 128)
+        self.affine1 = nn.Linear(feature_size * 2, 128)
         self.dropout = nn.Dropout(p=0.6)
         self.affine2 = nn.Linear(128, action_size)
 
@@ -32,10 +32,11 @@ class Policy(nn.Module):
 
     def forward(self, state):
         x = state.to(self.device)
+        x = x.view(1, -1)
         x = self.affine1(x)
         x = self.dropout(x)
         x = F.relu(x)
-        action_scores = self.affine2(x)
+        action_scores = self.affine2(x).view(-1, 1)
         #return F.softmax(action_scores, dim=1)
         return F.normalize(action_scores)
 
@@ -63,8 +64,8 @@ class ReinforceDecider:
         policy_loss = torch.cat(policy_loss).sum()
         policy_loss.backward()
         self.optimizer.step()
-        del policy.rewards[:]
-        del policy.saved_log_probs[:]
+        del self.policy.rewards[:]
+        del self.policy.saved_log_probs[:]
  
     def train(self, initial_state):
         running_reward = 10
