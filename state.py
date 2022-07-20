@@ -97,7 +97,7 @@ def transition_on_lang_prob(env, state, decision):
             break
     
     if link_to_crawl is None:
-        logging.info(f"Crawler decided to crawl {langid} but no documents in this language remained in link queue.")
+        logging.info(f"Crawler decided to crawl langid={langid} but no documents in this language remained in link queue.")
         return None
     
     crawled_child = env.crawl_child(link_to_crawl.id)

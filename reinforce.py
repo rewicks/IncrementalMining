@@ -140,8 +140,7 @@ class ReinforceDecider:
                 break
 
     def get_reward(self, action, state, new_state):
-        if new_state is None:
-            return -10000
+        assert(new_state is not None)
         new_documents = len(new_state.parallel_documents) - len(state.parallel_documents)
         reward = new_documents * 100
         return reward
