@@ -1,3 +1,6 @@
+
+# https://github.com/pytorch/examples/blob/main/reinforcement_learning/reinforce.py
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -76,6 +79,7 @@ class ReinforceDecider:
     def train(self, initial_state):
         running_reward = 10
         initial_features = initial_state.get_features()
+        
         for i_episode in count(1):
             state = initial_state
             features, ep_reward = np.array(initial_features), 0
