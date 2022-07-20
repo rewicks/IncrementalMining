@@ -28,7 +28,7 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
 
     start_state = create_start_state_from_node(env.rootNode, langIds)
-    decider = ReinforceDecider(args, env, transition_on_lang_prob, args.cpu, args.gamma)
+    decider = ReinforceDecider(args, env, transition_on_lang_prob, args.cpu, args.gamma, args.learningRate)
 
     ### some testing
     state = start_state
@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser.add_argument('--lang-pair', default="en-fr")
     parser.add_argument('--cpu', dest="cpu", action='store_true')
     parser.add_argument('--gamma', type=float, default=0.999, help="Reward discount")
+    parser.add_argument('--learning-rate', dest="learningRate", type=float, default=0.001, help="Learning rate")
     
     args = parser.parse_args()
     #print("cpu", args.cpu)

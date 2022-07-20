@@ -68,7 +68,7 @@ def get_action_from_predictions(act_probs):
     return len(act_probs) -1
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, cpu, gamma):
+    def __init__(self, args, env, env_step, cpu, gamma, learningRate):
         if cpu:
             self.device = 'cpu'
         else:
@@ -76,7 +76,7 @@ class ReinforceDecider:
 
         self.gamma = gamma
         self.policy = Policy(3, 3, self.device).to(self.device)
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-4)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=learningRate)
         self.eps = np.finfo(np.float32).eps.item()
         self.get_action_from_predictions = get_action_from_predictions
         self.env_step = env_step
