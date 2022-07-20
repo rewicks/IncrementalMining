@@ -30,31 +30,31 @@ def main(args):
 
     ### some testing
     state = start_state
-    for y in range(5):
-        state = start_state
-        print('do-over')
-        for x in range(10):
-            features = state.get_features()#  [3,4]
-            action = random.choice([0,1])
-            if action == 0 and features[3] > 0:
-                state = transition_on_lang_prob(env, state, action)
-            elif action == 1 and features[4] > 0:
-                state = transition_on_lang_prob(env, state, action)
-            elif action == 0 and features[3] == 0:
-                if features[4] > 0:
-                    state = transition_on_lang_prob(env, state, 1)
-            elif action == 1 and features[4] == 0:
-                if features[3] > 0:
-                    state = transition_on_lang_prob(env, state, 0)
-            else:
-                state = transition_on_lang_prob(env, state, 0)
+    # for y in range(5):
+    #     state = start_state
+    #     print('do-over')
+    #     for x in range(10):
+    #         features = state.get_features()#  [3,4]
+    #         action = random.choice([0,1])
+    #         if action == 0 and features[3] > 0:
+    #             state = transition_on_lang_prob(env, state, action)
+    #         elif action == 1 and features[4] > 0:
+    #             state = transition_on_lang_prob(env, state, action)
+    #         elif action == 0 and features[3] == 0:
+    #             if features[4] > 0:
+    #                 state = transition_on_lang_prob(env, state, 1)
+    #         elif action == 1 and features[4] == 0:
+    #             if features[3] > 0:
+    #                 state = transition_on_lang_prob(env, state, 0)
+    #         else:
+    #             state = transition_on_lang_prob(env, state, 0)
 
     # probs = torch.tensor([0.3, 0.7])
     # action = torch.argmax(probs)
     # new_state = transition_on_lang_prob(env, start_state, action)
 
     # # Start Training
-    # decider.train(start_state)
+    decider.train(start_state)
 
 
     # load model 

@@ -70,7 +70,7 @@ class State():
 def transition_on_lang_prob(env, state, decision):
     # logging.info(f"Current state:{state}")
     # langid = torch.argmax(decision, dim=0)
-    langid = state.languages[decision]
+    langid = state.languages[int(decision)]
 
     link_to_crawl = None
     for li in state.link_queue:

@@ -71,16 +71,17 @@ class ReinforceDecider:
     def train(self, initial_state):
         running_reward = 10
         initial_features = initial_state.get_features()
-        state = initial_state
         for i_episode in count(1):
+            state = initial_state
             features, ep_reward = np.array(initial_features), 0
             for t in range(1, 10000):
                 action_probs = self.predict(features)
                 action = self.get_action_from_predictions(action_probs, features)[0].item()
                 new_state = self.env_step(self.env, state, action)
-                reward, done = self.get_reward(action, features, new_state)
+                reward, done = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
                 ep_reward += reward
+                state = new_state
                 if done:
                     break
 
@@ -95,6 +96,8 @@ class ReinforceDecider:
                 break
 
     def get_reward(self, action, state, new_state):
+        if new_state is None:
+            return -10000, True
         new_documents = len(state.parallel_documents) - len(new_state.parallel_documents)
         reward = new_documents * 100
         return reward, False
