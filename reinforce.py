@@ -118,14 +118,14 @@ class ReinforceDecider:
                 logging.info(f"Prob: {[round(p.item(), 2) for p in action_probs[:,0]]}")
                 # action = self.get_action_from_predictions(action_probs)
                 new_state = self.env_step(self.env, state, action)
-                reward, done = self.get_reward(action, state, new_state)
+                if new_state is None:
+                    break
+                reward = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
                 ep_reward += discount * reward
                 discount *= self.gamma
 
                 state = new_state
-                if done:
-                    break
 
             running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             self.finish_episode()
@@ -141,10 +141,10 @@ class ReinforceDecider:
 
     def get_reward(self, action, state, new_state):
         if new_state is None:
-            return -10000, True
+            return -10000
         new_documents = len(new_state.parallel_documents) - len(state.parallel_documents)
         reward = new_documents * 100
-        return reward, False
+        return reward
 
     def predict(self, state, features):
         features = torch.from_numpy(features).float().unsqueeze(0)
