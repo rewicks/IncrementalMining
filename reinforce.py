@@ -68,7 +68,7 @@ def get_action_from_predictions(act_probs):
     return len(act_probs) -1
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, cpu, gamma, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
+    def __init__(self, args, env, env_step, cpu, gamma):
         if cpu:
             self.device = 'cpu'
         else:
