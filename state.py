@@ -27,6 +27,7 @@ class State():
         # actually simpler than a queue
         self.link_queue = []
         self.link_queue_limit = link_queue_limit
+        self.visited_links = set()
 
         # these actually might be *too* large to keep, so maybe
         # just keep metadata from them
@@ -36,7 +37,8 @@ class State():
         self.languages = languages
 
     def add_link(self, link):
-        self.link_queue.append(link)
+        if link.url not in self.visited_links:
+            self.link_queue.append(link)
         if len(self.link_queue) > self.link_queue_limit:
             self.link_queue.pop(0)
 
@@ -57,14 +59,22 @@ class State():
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
+    def __str__(self):
+        out = f"LINKS:\n"
+        for li in self.link_queue:
+            out += f'\t{li.url};{li.language}\n'
+
+        return out
+
     
 def transition_on_lang_prob(env, state, decision):
+    # logging.info(f"Current state:{state}")
     # langid = torch.argmax(decision, dim=0)
-    # langid = langIds[torch.argmax(decision, dim=0)]
+    langid = state.languages[decision]
 
     link_to_crawl = None
     for li in state.link_queue:
-        if li.language == decision:
+        if li.language == langid:
             link_to_crawl = li
             break
     
@@ -73,10 +83,13 @@ def transition_on_lang_prob(env, state, decision):
         return None
     
     crawled_child = env.crawl_child(link_to_crawl.id)
+    state.visited_links.add(crawled_child.url)
+    logging.info(f'Crawling {crawled_child.lang} child with url {crawled_child.url}')
 
     new_state = State(languages=state.languages, link_queue_limit = state.link_queue_limit)
+    new_state.visited_links = state.visited_links
+
     for li in state.link_queue:
-        if li.url != link_to_crawl.url:
             new_state.add_link(li)
     
     for child_link in crawled_child.links:
@@ -87,7 +100,7 @@ def transition_on_lang_prob(env, state, decision):
         new_state.add_link(link)
 
     for parallel_doc in state.parallel_documents:
-        new_state.append(parallel_doc)
+        new_state.parallel_documents.append(parallel_doc)
 
     crawled_doc = MonolingualDocument(docid=crawled_child.urlId, langid=crawled_child.lang)
     aligned = False
@@ -96,7 +109,7 @@ def transition_on_lang_prob(env, state, decision):
             parallel_doc = ParallelDocument(len(new_state.parallel_documents))
             parallel_doc.add_document(crawled_doc.docid)
             parallel_doc.add_document(monolingual_doc.docid)
-            new_state.append(parallel_doc)
+            new_state.parallel_documents.append(parallel_doc)
             aligned = True
         else:
             new_state.monolingual_documents.append(monolingual_doc)
