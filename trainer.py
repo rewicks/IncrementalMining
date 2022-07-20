@@ -28,7 +28,7 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
 
     start_state = create_start_state_from_node(env.rootNode, langIds, args.linkQueueLimit)
-    decider = ReinforceDecider(args, env, transition_on_lang_prob, args.cpu, args.gamma, args.learningRate, args.hiddenDim)
+    decider = ReinforceDecider(args, env, transition_on_lang_prob)
 
     ### some testing
     state = start_state

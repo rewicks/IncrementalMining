@@ -68,15 +68,15 @@ def get_action_from_predictions(act_probs):
     return len(act_probs) -1
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, cpu, gamma, learningRate, hiddenDim):
-        if cpu:
+    def __init__(self, args, env, env_step):
+        if args.cpu:
             self.device = 'cpu'
         else:
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.gamma = gamma
-        self.policy = Policy(3, 3, hiddenDim, self.device).to(self.device)
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=learningRate)
+        self.gamma = args.gamma
+        self.policy = Policy(3, 3, args.hiddenDim, self.device).to(self.device)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=args.learningRate)
         self.eps = np.finfo(np.float32).eps.item()
         self.get_action_from_predictions = get_action_from_predictions
         self.env_step = env_step
