@@ -41,8 +41,12 @@ class Policy(nn.Module):
         return F.normalize(action_scores)
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    def __init__(self, args, env, env_step, cpu, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
+        if cpu:
+            self.device = 'cpu'
+        else:
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            
         self.policy = Policy(3, 3, self.device).to(self.device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-2)
         self.eps = np.finfo(np.float32).eps.item()
