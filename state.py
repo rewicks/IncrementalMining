@@ -21,7 +21,7 @@ import numpy as np
 
 # Base class for all other states
 class State():
-    def __init__(self, languages, link_queue_limit=1000):
+    def __init__(self, languages, link_queue_limit=999999999):
 
         # unless people protest I think a list of size k is
         # actually simpler than a queue
@@ -62,7 +62,7 @@ class State():
     def isOption(self, language):
         language_counts = Counter([x.language for x in self.link_queue if x.language in self.languages])
         non_language_counts = Counter([x.language for x in self.link_queue if x.language not in self.languages])
-        if language < len(self.languages):
+        if language in language_counts:
             if language_counts[language] > 0:
                 return True
             return False

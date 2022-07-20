@@ -102,7 +102,7 @@ class ReinforceDecider:
  
     def train(self, initial_state):
         running_reward = 10
-        for i_episode in range(100):
+        for i_episode in range(10):
             logging.info("START OF EPISODE")
             state = initial_state
             ep_reward = 0
@@ -142,7 +142,7 @@ class ReinforceDecider:
     def get_reward(self, action, state, new_state):
         if new_state is None:
             return -10000, True
-        new_documents = len(state.parallel_documents) - len(new_state.parallel_documents)
+        new_documents = abs(len(new_state.parallel_documents) - len(state.parallel_documents))
         reward = new_documents * 100
         return reward, False
 
@@ -150,9 +150,9 @@ class ReinforceDecider:
         features = torch.from_numpy(features).float().unsqueeze(0)
         features = features.to(self.device)
         action_scores = self.policy(features)
-        for i, l in enumerate(state.languages):
-            if not state.isOption(l):
-                action_scores[i] = -1000000
+        for i, f in enumerate(features[0, 3:]):
+            if f == 0:
+                action_scores[i, 0] = -1000000
         # m = Categorical(F.softmax(probs, dim=1))
         probs = F.softmax(action_scores, dim=0)
         action = self.get_action_from_predictions(probs)
