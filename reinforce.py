@@ -155,7 +155,6 @@ class ReinforceDecider:
                 action_scores[i] = -1000000
         # m = Categorical(F.softmax(probs, dim=1))
         probs = F.softmax(action_scores, dim=0)
-        print(probs, "RJDEBUG")
         action = self.get_action_from_predictions(probs)
         self.policy.saved_log_probs.append(torch.log(probs[action]))
         return probs, action
