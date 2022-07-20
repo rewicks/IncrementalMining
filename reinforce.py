@@ -41,12 +41,13 @@ class Policy(nn.Module):
         return F.normalize(action_scores)
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, cpu, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
+    def __init__(self, args, env, env_step, cpu, gamma, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
         if cpu:
             self.device = 'cpu'
         else:
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-            
+
+        self.gamma = gamma
         self.policy = Policy(3, 3, self.device).to(self.device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-2)
         self.eps = np.finfo(np.float32).eps.item()
@@ -78,13 +79,17 @@ class ReinforceDecider:
         for i_episode in count(1):
             state = initial_state
             features, ep_reward = np.array(initial_features), 0
+            discount = 1.0
+
             for t in range(1, 10000):
                 action_probs = self.predict(features)
                 action = self.get_action_from_predictions(action_probs, features)[0].item()
                 new_state = self.env_step(self.env, state, action)
                 reward, done = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
-                ep_reward += reward
+                ep_reward += discount * reward
+                discount *= self.gamma
+
                 state = new_state
                 if done:
                     break
