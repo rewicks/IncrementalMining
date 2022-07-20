@@ -81,7 +81,7 @@ if __name__ == "__main__":
     parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
     parser.add_argument("--hidden-dim", dest="hiddenDim", type=int,
-                        default=12, help="Hidden dimension")
+                        default=24, help="Hidden dimension")
 
     args = parser.parse_args()
     #print("cpu", args.cpu)
