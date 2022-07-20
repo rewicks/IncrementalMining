@@ -56,7 +56,7 @@ def main(args):
     # new_state = transition_on_lang_prob(env, start_state, action)
 
     # # Start Training
-    decider.train(start_state)
+    decider.train(start_state, args.maxEpisode)
 
 
     # load model 
@@ -77,6 +77,7 @@ if __name__ == "__main__":
     parser.add_argument('--cpu', dest="cpu", action='store_true')
     parser.add_argument('--gamma', type=float, default=0.999, help="Reward discount")
     parser.add_argument('--learning-rate', dest="learningRate", type=float, default=0.001, help="Learning rate")
+    parser.add_argument('--max-episode', dest="maxEpisode", type=int, default=10000000, help="Maximum number of training episodes")
     
     args = parser.parse_args()
     #print("cpu", args.cpu)

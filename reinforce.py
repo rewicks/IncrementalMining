@@ -100,9 +100,9 @@ class ReinforceDecider:
         del self.policy.rewards[:]
         del self.policy.saved_log_probs[:]
  
-    def train(self, initial_state):
+    def train(self, initial_state, maxEpisode):
         running_reward = 10
-        for i_episode in range(10000):
+        for i_episode in range(maxEpisode):
             logging.info("START OF EPISODE")
             state = initial_state
             ep_reward = 0
