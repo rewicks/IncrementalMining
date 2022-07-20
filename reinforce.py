@@ -35,11 +35,11 @@ args = {
 torch.manual_seed(args['seed'])
 
 class Policy(nn.Module):
-    def __init__(self, feature_size, action_size, device):
+    def __init__(self, feature_size, action_size, hiddenDim, device):
         super(Policy, self).__init__()
-        self.affine1 = nn.Linear(feature_size * 2, 128)
+        self.affine1 = nn.Linear(feature_size * 2, hiddenDim)
         self.dropout = nn.Dropout(p=0.6)
-        self.affine2 = nn.Linear(128, action_size)
+        self.affine2 = nn.Linear(hiddenDim, action_size)
         self.softmax = nn.Softmax(dim=0)
 
         self.saved_log_probs = []
@@ -68,14 +68,14 @@ def get_action_from_predictions(act_probs):
     return len(act_probs) -1
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, cpu, gamma, learningRate):
+    def __init__(self, args, env, env_step, cpu, gamma, learningRate, hiddenDim):
         if cpu:
             self.device = 'cpu'
         else:
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.gamma = gamma
-        self.policy = Policy(3, 3, self.device).to(self.device)
+        self.policy = Policy(3, 3, hiddenDim, self.device).to(self.device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=learningRate)
         self.eps = np.finfo(np.float32).eps.item()
         self.get_action_from_predictions = get_action_from_predictions

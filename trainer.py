@@ -28,7 +28,7 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
 
     start_state = create_start_state_from_node(env.rootNode, langIds, args.linkQueueLimit)
-    decider = ReinforceDecider(args, env, transition_on_lang_prob, args.cpu, args.gamma, args.learningRate)
+    decider = ReinforceDecider(args, env, transition_on_lang_prob, args.cpu, args.gamma, args.learningRate, args.hiddenDim)
 
     ### some testing
     state = start_state
@@ -80,7 +80,9 @@ if __name__ == "__main__":
     parser.add_argument('--max-episode', dest="maxEpisode", type=int, default=10000000, help="Maximum number of training episodes")
     parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
-    
+    parser.add_argument("--hidden-dim", dest="hiddenDim", type=int,
+                        default=12, help="Hidden dimension")
+
     args = parser.parse_args()
     #print("cpu", args.cpu)
     #exit(1)
