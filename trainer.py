@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os, sys, logging
 import torch
@@ -27,7 +28,7 @@ def main(args):
     env = GetEnv(args.config_file, languages, args.host_name)
 
     start_state = create_start_state_from_node(env.rootNode, langIds)
-    decider = ReinforceDecider(args, env, transition_on_lang_prob)
+    decider = ReinforceDecider(args, env, transition_on_lang_prob, args.cpu, args.gamma)
 
     ### some testing
     state = start_state
@@ -73,7 +74,10 @@ if __name__ == "__main__":
     parser.add_argument('--config-file', default="config.ini")
     parser.add_argument('--host-name', default="http://www.visitbritain.com/")
     parser.add_argument('--lang-pair', default="en-fr")
-
-
+    parser.add_argument('--cpu', dest="cpu", action='store_true')
+    parser.add_argument('--gamma', type=float, default=0.999, help="Reward discount")
+    
     args = parser.parse_args()
+    #print("cpu", args.cpu)
+    #exit(1)
     main(args)

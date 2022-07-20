@@ -1,3 +1,6 @@
+
+# https://github.com/pytorch/examples/blob/main/reinforcement_learning/reinforce.py
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -65,8 +68,13 @@ def get_action_from_predictions(act_probs):
     return len(act_probs) -1
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step):
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    def __init__(self, args, env, env_step, cpu, gamma, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
+        if cpu:
+            self.device = 'cpu'
+        else:
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        self.gamma = gamma
         self.policy = Policy(3, 3, self.device).to(self.device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-2)
         self.eps = np.finfo(np.float32).eps.item()
@@ -94,24 +102,27 @@ class ReinforceDecider:
  
     def train(self, initial_state):
         running_reward = 10
-        # initial_features = initial_state.get_features()
         for i_episode in range(100):
             logging.info("START OF EPISODE")
             state = initial_state
             ep_reward = 0
+            discount = 1.0
             for t in range(1, 100000):
                 features = np.array(state.get_features())
                 # [2 0 0 0 0 0]
                 if features[3] == 0 and features[4] == 0 and features[5] == 0:
                     pass
                 logging.info(f"{features}")
+
                 action_probs = self.predict(features)
                 logging.info(f"Prob: {[round(p.item(), 2) for p in action_probs[:,0]]}")
                 action = self.get_action_from_predictions(action_probs)
                 new_state = self.env_step(self.env, state, action)
                 reward, done = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
-                ep_reward += reward
+                ep_reward += discount * reward
+                discount *= self.gamma
+
                 state = new_state
                 if done:
                     break
