@@ -29,7 +29,7 @@ args = {
     'seed': 1234,
     'gamma': 0.99,
     'log_interval': 10,
-    'reward_threshold': 100
+    'reward_threshold': 10000000
 }
 
 torch.manual_seed(args['seed'])
@@ -142,7 +142,7 @@ class ReinforceDecider:
     def get_reward(self, action, state, new_state):
         if new_state is None:
             return -10000, True
-        new_documents = abs(len(new_state.parallel_documents) - len(state.parallel_documents))
+        new_documents = len(new_state.parallel_documents) - len(state.parallel_documents)
         reward = new_documents * 100
         return reward, False
 
