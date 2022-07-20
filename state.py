@@ -21,7 +21,7 @@ import numpy as np
 
 # Base class for all other states
 class State():
-    def __init__(self, languages, link_queue_limit=999999999):
+    def __init__(self, languages, link_queue_limit):
 
         # unless people protest I think a list of size k is
         # actually simpler than a queue
@@ -141,7 +141,7 @@ def transition_on_lang_prob(env, state, decision):
     return new_state
 
 
-def create_start_state_from_node(root, languages, link_queue_limit=1000):
+def create_start_state_from_node(root, languages, link_queue_limit):
     state = State(languages, link_queue_limit=link_queue_limit)
 
     # update with the only crawled page
