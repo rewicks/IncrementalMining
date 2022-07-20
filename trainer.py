@@ -7,7 +7,7 @@ from utils import MySQL, Languages
 from state import (State, 
                 create_start_state_from_node,
                 transition_on_lang_prob)
-from environment import Env, GetEnv
+from environment import Env, GetEnv, Dummy
 from reinforce import ReinforceDecider
 
 logging.basicConfig(
@@ -23,6 +23,7 @@ def main(args):
     sqlconn = MySQL(args.config_file)
     languages = Languages(sqlconn)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
+    # env = Dummy()
     env = GetEnv(args.config_file, languages, args.host_name)
 
     start_state = create_start_state_from_node(env.rootNode, langIds)

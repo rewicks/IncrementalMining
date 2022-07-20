@@ -54,7 +54,7 @@ class State():
         # link counters
         link_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language in self.languages])
         link_targeted_langs = [link_targeted_language_counter[lang] for lang in self.languages]
-        link_non_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language not in self.languages])
+        link_non_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language not in self.languages])
         link_non_targeted_langs = [sum(link_non_targeted_language_counter)]
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
@@ -70,11 +70,17 @@ class State():
 def transition_on_lang_prob(env, state, decision):
     # logging.info(f"Current state:{state}")
     # langid = torch.argmax(decision, dim=0)
-    langid = state.languages[int(decision)]
+    if decision < len(state.languages):
+        langid = state.languages[int(decision)]
+    else:
+        langid = None
 
     link_to_crawl = None
     for li in state.link_queue:
         if li.language == langid:
+            link_to_crawl = li
+            break
+        if langid is None and li.language not in state.languages:
             link_to_crawl = li
             break
     
@@ -83,11 +89,15 @@ def transition_on_lang_prob(env, state, decision):
         return None
     
     crawled_child = env.crawl_child(link_to_crawl.id)
-    state.visited_links.add(crawled_child.url)
-    logging.info(f'Crawling {crawled_child.lang} child with url {crawled_child.url}')
+    if crawled_child.lang != langid:
+        logging.info(f"Crawled child was in language {crawled_child.lang} but wanted to crawl {langid}")
+    logging.info(f'Crawling child with url {crawled_child.url}')
 
     new_state = State(languages=state.languages, link_queue_limit = state.link_queue_limit)
-    new_state.visited_links = state.visited_links
+
+    for li in state.visited_links:
+        new_state.visited_links.add(li)
+    new_state.visited_links.add(crawled_child.url)
 
     for li in state.link_queue:
             new_state.add_link(li)

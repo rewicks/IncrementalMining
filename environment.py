@@ -522,3 +522,42 @@ class Env:
         return ret
 
 
+############################################################################
+class Dummy():
+    def __init__(self):
+        self.nodes = {}
+        self.rootNode = None
+        with open('test.txt') as infile:
+            for i, line in enumerate(infile):
+                if self.rootNode is None:
+                    self.rootNode = DummyNode(i, line.strip())
+                node = DummyNode(i, line.strip())
+                self.nodes[node.url] = node
+
+
+
+class DummyNode():
+    def __init__(self, id, line):
+        self.urlId = id
+        line = line.split(' ')
+        self.url = line[0]
+        if line[1] == "None":
+            self.alignedNode = None
+        else:
+            self.alignedNode = line[1]
+        self.lang = line[2]
+        self.links = []
+        for li in line[3:]:
+            self.links.append(
+                Link(
+                    link_text="",
+                    link_text_lang="",
+                    link_url=li,
+                    link_url_id=""
+                )
+            )
+        self.links = line[3:]
+
+class DummyLink():
+    def __init__(self, url):
+        self.text = ""

@@ -6,7 +6,21 @@ from torch.distributions import Categorical
 
 import argparse
 import numpy as np
+import random
 from itertools import count
+
+# from copy import deepcopy
+
+import logging
+import os, sys
+
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=os.environ.get("LOGLEVEL", "INFO").upper(),
+    stream=sys.stderr,
+)
+logger = logging.getLogger("SmartCrawler")
 
 args = {
     'seed': 1234,
@@ -23,6 +37,7 @@ class Policy(nn.Module):
         self.affine1 = nn.Linear(feature_size * 2, 128)
         self.dropout = nn.Dropout(p=0.6)
         self.affine2 = nn.Linear(128, action_size)
+        self.softmax = nn.Softmax(dim=0)
 
         self.saved_log_probs = []
         self.rewards = []
@@ -37,11 +52,20 @@ class Policy(nn.Module):
         x = self.dropout(x)
         x = F.relu(x)
         action_scores = self.affine2(x).view(-1, 1)
-        #return F.softmax(action_scores, dim=1)
-        return F.normalize(action_scores)
+        return self.softmax(action_scores)
+        # return F.normalize(action_scores)
+
+def get_action_from_predictions(act_probs):
+    choice = random.random()
+    last = 0
+    for i, p in enumerate(act_probs):
+        if p + last > choice:
+            return i
+        last += p
+    return len(act_probs) -1
 
 class ReinforceDecider:
-    def __init__(self, args, env, env_step, get_action_from_predictions = lambda act_probs, features: F.softmax(act_probs, dim=1)):
+    def __init__(self, args, env, env_step):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.policy = Policy(3, 3, self.device).to(self.device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-2)
@@ -70,13 +94,20 @@ class ReinforceDecider:
  
     def train(self, initial_state):
         running_reward = 10
-        initial_features = initial_state.get_features()
-        for i_episode in count(1):
+        # initial_features = initial_state.get_features()
+        for i_episode in range(100):
+            logging.info("START OF EPISODE")
             state = initial_state
-            features, ep_reward = np.array(initial_features), 0
-            for t in range(1, 10000):
+            ep_reward = 0
+            for t in range(1, 100000):
+                features = np.array(state.get_features())
+                # [2 0 0 0 0 0]
+                if features[3] == 0 and features[4] == 0 and features[5] == 0:
+                    pass
+                logging.info(f"{features}")
                 action_probs = self.predict(features)
-                action = self.get_action_from_predictions(action_probs, features)[0].item()
+                logging.info(f"Prob: {[round(p.item(), 2) for p in action_probs[:,0]]}")
+                action = self.get_action_from_predictions(action_probs)
                 new_state = self.env_step(self.env, state, action)
                 reward, done = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
@@ -106,7 +137,7 @@ class ReinforceDecider:
         state = torch.from_numpy(state).float().unsqueeze(0)
         state = state.to(self.device)
         probs = self.policy(state)
-        m = Categorical(F.softmax(probs, dim=1))
-        action = m.sample()
-        self.policy.saved_log_probs.append(m.log_prob(action))
+        # m = Categorical(F.softmax(probs, dim=1))
+        action = self.get_action_from_predictions(probs)
+        self.policy.saved_log_probs.append(torch.log(probs[action]))
         return probs
