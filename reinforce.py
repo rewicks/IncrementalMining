@@ -55,7 +55,7 @@ class Policy(nn.Module):
         x = self.dropout(x)
         x = F.relu(x)
         action_scores = self.affine2(x).view(-1, 1)
-        return self.softmax(action_scores)
+        return action_scores
         # return F.normalize(action_scores)
 
 def get_action_from_predictions(act_probs):
@@ -114,9 +114,9 @@ class ReinforceDecider:
                     pass
                 logging.info(f"{features}")
 
-                action_probs = self.predict(features)
+                action_probs, action = self.predict(state, features)
                 logging.info(f"Prob: {[round(p.item(), 2) for p in action_probs[:,0]]}")
-                action = self.get_action_from_predictions(action_probs)
+                # action = self.get_action_from_predictions(action_probs)
                 new_state = self.env_step(self.env, state, action)
                 reward, done = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
@@ -129,6 +129,8 @@ class ReinforceDecider:
 
             running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             self.finish_episode()
+            print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
+                i_episode, ep_reward, running_reward))
             if i_episode % args['log_interval'] == 0:
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                     i_episode, ep_reward, running_reward))
@@ -144,11 +146,15 @@ class ReinforceDecider:
         reward = new_documents * 100
         return reward, False
 
-    def predict(self, state):
-        state = torch.from_numpy(state).float().unsqueeze(0)
-        state = state.to(self.device)
-        probs = self.policy(state)
+    def predict(self, state, features):
+        features = torch.from_numpy(features).float().unsqueeze(0)
+        features = features.to(self.device)
+        action_scores = self.policy(features)
+        for i, l in enumerate(state.languages):
+            if not state.isOption(l):
+                action_scores[i] = -1000000
         # m = Categorical(F.softmax(probs, dim=1))
+        probs = F.softmax(action_scores, dim=0)
         action = self.get_action_from_predictions(probs)
         self.policy.saved_log_probs.append(torch.log(probs[action]))
-        return probs
+        return probs, action

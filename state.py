@@ -59,12 +59,24 @@ class State():
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
+    def isOption(self, language):
+        language_counts = Counter([x.language for x in self.link_queue if x.language in self.languages])
+        non_language_counts = Counter([x.language for x in self.link_queue if x.language not in self.languages])
+        if language < len(self.languages):
+            if language_counts[language] > 0:
+                return True
+            return False
+        if sum(non_language_counts) > 0:
+            return True
+        return False
+
     def __str__(self):
         out = f"LINKS:\n"
         for li in self.link_queue:
             out += f'\t{li.url};{li.language}\n'
 
         return out
+
 
     
 def transition_on_lang_prob(env, state, decision):
