@@ -29,7 +29,7 @@ args = {
     'seed': 1234,
     'gamma': 0.99,
     'log_interval': 10,
-    'reward_threshold': 100
+    'reward_threshold': 10000000
 }
 
 torch.manual_seed(args['seed'])
@@ -102,7 +102,7 @@ class ReinforceDecider:
  
     def train(self, initial_state):
         running_reward = 10
-        for i_episode in range(100):
+        for i_episode in count(1):
             logging.info("START OF EPISODE")
             state = initial_state
             ep_reward = 0
@@ -141,8 +141,8 @@ class ReinforceDecider:
 
     def get_reward(self, action, state, new_state):
         if new_state is None:
-            return -10000, True
-        new_documents = len(state.parallel_documents) - len(new_state.parallel_documents)
+            return -1000, True
+        new_documents = len(new_state.parallel_documents) - len(state.parallel_documents)
         reward = new_documents * 100
         return reward, False
 
@@ -155,6 +155,7 @@ class ReinforceDecider:
                 action_scores[i] = -1000000
         # m = Categorical(F.softmax(probs, dim=1))
         probs = F.softmax(action_scores, dim=0)
+        print(probs, "RJDEBUG")
         action = self.get_action_from_predictions(probs)
         self.policy.saved_log_probs.append(torch.log(probs[action]))
         return probs, action

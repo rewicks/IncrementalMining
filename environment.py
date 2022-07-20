@@ -109,13 +109,13 @@ def isParallel(env, doc1, doc2):
     doc1_node = env.nodes[doc1.docid]
     doc2_node = env.nodes[doc2.docid]
     
-    if doc1_node.alignedNode is not None and doc2_node.alignedNode is not None:
-        if doc1_node.alignedNode.urlId == doc2_node.alignedNode.urlId:
-            return True
-        else:
-            return False
-    return False
+    #print(doc1_node.alignedNode, doc2_node.alignedNode, "BLAH")
 
+    if doc1_node.alignedNode is not None and doc1_node.alignedNode.urlId == doc2_node.urlId:
+        assert(doc2_node.alignedNode is not None)
+        assert(doc2_node.alignedNode.urlId == doc1_node.urlId)
+        return True
+    return False
 
 def NumParallelDocs(env, visited):
     ret = 0
