@@ -100,14 +100,14 @@ class ReinforceDecider:
         del self.policy.rewards[:]
         del self.policy.saved_log_probs[:]
  
-    def train(self, initial_state, maxEpisode):
+    def train(self, initial_state, maxEpisode, maxStep):
         running_reward = 10
         for i_episode in range(maxEpisode):
             logging.info("START OF EPISODE")
             state = initial_state
             ep_reward = 0
             discount = 1.0
-            for t in range(1, 100000):
+            for t in range(1, maxStep):
                 features = np.array(state.get_features())
                 # [2 0 0 0 0 0]
                 if features[3] == 0 and features[4] == 0 and features[5] == 0:
