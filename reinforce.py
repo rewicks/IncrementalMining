@@ -102,7 +102,7 @@ class ReinforceDecider:
  
     def train(self, initial_state):
         running_reward = 10
-        for i_episode in range(10):
+        for i_episode in range(10000):
             logging.info("START OF EPISODE")
             state = initial_state
             ep_reward = 0
