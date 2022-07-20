@@ -95,7 +95,9 @@ class ReinforceDecider:
                 break
 
     def get_reward(self, action, state, new_state):
-        return 0, False
+        new_documents = len(state.parallel_documents) - len(new_state.parallel_documents)
+        reward = new_documents * 100
+        return reward, False
 
     def predict(self, state):
         state = torch.from_numpy(state).float().unsqueeze(0)
