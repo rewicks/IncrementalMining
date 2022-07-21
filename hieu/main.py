@@ -13,6 +13,8 @@ from utils import MySQL, Languages
 from environment import Env, GetEnv, Dummy, isParallel
 from state import Link, MonolingualDocument, ParallelDocument
 
+from matplotlib import pyplot as plt
+
 class State2():
     def __init__(self, languages, link_queue_limit):
 
@@ -50,19 +52,28 @@ class State2():
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
-class RandomDecider:
+
+class Decider:
+    def ChooseLink(self, state, probs):
+        if len(state.link_queue) > 0:
+            link = np.random.choice(state.link_queue, 1, p=probs)
+            print("link", link)
+            return link[0]
+        else:
+            return None
+
+class RandomDecider(Decider):
     def CalcProbs(self, state):
         ret = np.empty([len(state.link_queue)])
-        ret.fill(1./len(state.link_queue))
+        if len(state.link_queue) > 0:
+            ret.fill(1./len(state.link_queue))
+        else:
+            return np.empty([])
 
-    def ChooseLink(self, state, probs):
-        link = np.random.choice(state.link_queue, 1, p=probs)
-        print("link", link)
-        return link[0]
-
-class LinearDecider:
+class LinearDecider(Decider):
     def __init__(self):
         self.coefficients = np.array([5, 5, 5])
+
     def CalcProbs(self, state):
         print("self.languages", state.languages)
         features = state.get_features()
@@ -93,11 +104,6 @@ class LinearDecider:
         #print("probs", probs.shape, np.sum(probs))
         return probs
 
-    def ChooseLink(self, state, probs):
-        link = np.random.choice(state.link_queue, 1, p=probs)
-        print("link", link)
-        return link[0]
-
 ######################################################################################
 def create_start_state_from_node(root, languages, link_queue_limit):
     state = State2(languages, link_queue_limit=link_queue_limit)
@@ -110,6 +116,7 @@ def create_start_state_from_node(root, languages, link_queue_limit):
     for li in root.links:
         link = Link(link_text=li.text,
                     link_text_lang=li.textLang,
+                    parent_lang=root.lang,
                     link_url=li.childNode.url,
                     link_url_id=li.childNode.urlId)
         state.add_link(link)
@@ -133,6 +140,7 @@ def transition_on_link(env, state, link_to_crawl):
     for child_link in crawled_child.links:
         link = Link(link_text=child_link.text,
                     link_text_lang=child_link.textLang,
+                    parent_lang=crawled_child.lang,
                     link_url=child_link.childNode.url,
                     link_url_id=child_link.childNode.urlId)
         new_state.add_link(link)
@@ -168,7 +176,6 @@ def main(args):
     print("Starting")
     maxStep = 10000
     coefficients = np.array([5, 5, 5])
-
     sqlconn = MySQL(args.config_file)
     languages = Languages(sqlconn)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
@@ -188,10 +195,14 @@ def main(args):
     else:
         decider = None
 
-    for t in range(1, maxStep):
+    for t in range(1, args.maxStep):
         probs = decider.CalcProbs(state)
         if probs is not None:
             link = decider.ChooseLink(state, probs)
+
+            if link is None: # No more links left to crawl
+                print("Exhausted all links in the queue. Nothing left to do")
+                break
 
             new_state = transition_on_link(env, state, link)
             if new_state is None:
@@ -212,6 +223,7 @@ def main(args):
     print("Finished")
     print(f"Reward: {ep_reward}")
     print(f"Documents: {','.join(docs)}")
+    return docs
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -220,8 +232,16 @@ if __name__ == "__main__":
     parser.add_argument('--host-name', default="http://www.visitbritain.com/")
     parser.add_argument('--lang-pair', default="en-fr")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
+    parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
 
     args = parser.parse_args()
     #print("cpu", args.cpu)
     #exit(1)
-    main(args)
+
+    crawl_histories = []
+    for x in range(1):
+        crawl_histories.append(main(args))
+    
+    print ("CRAWL HISTORIES")
+    for x in crawl_histories:
+        print(",".join(x))
