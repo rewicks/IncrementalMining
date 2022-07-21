@@ -50,14 +50,22 @@ class State2():
         link_non_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language not in self.languages])
         link_non_targeted_langs = [sum(link_non_targeted_language_counter)]
 
-        return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
+        link_targeted_parent_language_counter = Counter([x.parent_lang for x in self.link_queue if x.parent_lang in self.languages])
+        link_targeted_parent_langs = [link_targeted_parent_language_counter[lang] for lang in self.languages]
+        link_non_targeted_parent_language_counter = Counter([x.parent_lang for x in self.link_queue if x.parent_lang not in self.languages])
+        link_non_targeted_parent_langs = [sum(link_non_targeted_parent_language_counter)]
+
+        ret = doc_targeted_langs + doc_non_targeted_langs \
+            + link_targeted_langs + link_non_targeted_langs \
+            + link_targeted_parent_langs + link_non_targeted_parent_langs
+        return ret
 
 
 class Decider:
     def ChooseLink(self, state, probs):
         if len(state.link_queue) > 0:
             link = np.random.choice(state.link_queue, 1, p=probs)
-            print("link", link)
+            #print("link", link)
             return link[0]
         else:
             return None
@@ -72,7 +80,7 @@ class RandomDecider(Decider):
 
 class LinearDecider:
     def __init__(self):
-        self.coefficients = np.array([1, 1, 1])
+        self.coefficients = np.array([5, 5, 5, 5, 5, 5])
 
     def ChooseLink(self, state, probs):
         if len(state.link_queue) > 0:
@@ -83,17 +91,17 @@ class LinearDecider:
             return None
 
     def CalcProbs(self, state):
-        print("self.languages", state.languages)
+        #print("self.languages", state.languages)
         features = state.get_features()
         #features = np.array(self.get_features())
-        print("features", features)
+        #print("features", features)
 
         langCosts = features[:3]
         langCosts = scipy.special.softmax(langCosts)
 
         probs = np.empty([len(state.link_queue)])
         for linkIdx, link in enumerate(state.link_queue):
-            costs = np.zeros([3])
+            costs = np.zeros([6])
             #print(link.language) 
             if link.language == state.languages[0]:
                 costs[0] = langCosts[0]
@@ -101,11 +109,21 @@ class LinearDecider:
                 costs[1] = langCosts[1]
             else:
                 costs[2] = langCosts[2]
+
+            if link.parent_lang == state.languages[0]:
+                costs[3] = langCosts[0]
+            elif link.parent_lang == state.languages[1]:
+                costs[4] = langCosts[1]
+            else:
+                costs[5] = langCosts[2]
+
             #print("costs", costs)
             linkCost = np.inner(self.coefficients, costs)
             #print("linkCost", linkCost)
             probs[linkIdx] = linkCost
 
+        if len(probs) == 0:
+            return None
         probs = probs #scipy.special.softmax(probs)
         #print("probs", probs.shape, np.sum(probs))
         return probs
@@ -201,14 +219,17 @@ def main(args):
 
     for t in range(1, args.maxStep):
         probs = decider.CalcProbs(state)
-        link = decider.ChooseLink(state, probs)
+        if probs is not None:
+            link = decider.ChooseLink(state, probs)
 
-        if link is None: # No more links left to crawl
-            print("Exhausted all links in the queue. Nothing left to do")
-            break
+            if link is None: # No more links left to crawl
+                print("Exhausted all links in the queue. Nothing left to do")
+                break
 
-        new_state = transition_on_link(env, state, link)
-        if new_state is None:
+            new_state = transition_on_link(env, state, link)
+            if new_state is None:
+                break
+        else:
             break
 
         # logging of stats for comparing models (not used for training)
