@@ -58,7 +58,7 @@ class State2():
         langCosts = scipy.special.softmax(langCosts)
 
         probs = np.empty([len(self.link_queue)])
-        for link in self.link_queue:
+        for linkIdx, link in enumerate(self.link_queue):
             costs = np.zeros([3])
             #print(link.language) 
             if link.language == self.languages[0]:
@@ -67,10 +67,16 @@ class State2():
                 costs[1] = langCosts[1]
             else:
                 costs[2] = langCosts[2]
+            print("costs", costs)
+            linkCost = np.inner(coefficients, costs)
+            print("linkCost", linkCost)
+            probs[linkIdx] = linkCost
 
-        print("probs", probs.shape)
+        probs = scipy.special.softmax(probs)
+        print("probs", probs.shape, np.sum(probs))
         return probs
 
+######################################################################################
 def create_start_state_from_node(root, languages, link_queue_limit):
     state = State2(languages, link_queue_limit=link_queue_limit)
 
@@ -98,7 +104,7 @@ def SafeDiv(a, b):
 def main(args):
     print("Starting")
     maxStep = 2 #000000
-    coefficients = [1, 2, 3, 4, 5, 6]
+    coefficients = np.array([5, 5, 5])
 
     sqlconn = MySQL(args.config_file)
     languages = Languages(sqlconn)
