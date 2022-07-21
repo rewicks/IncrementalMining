@@ -167,12 +167,10 @@ def create_start_state_from_node(root, languages, link_queue_limit):
 class Link():
     def __init__(self, link_text: str,
                         link_text_lang: int,
-                        parent_lang: int,
                         link_url: str,
                         link_url_id: int):
         self.link_text = link_text
         self.language = link_text_lang
-        self.parent_lang = parent_lang
         self.url = link_url
         self.id = link_url_id
 
