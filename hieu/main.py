@@ -70,9 +70,17 @@ class RandomDecider(Decider):
         else:
             return np.empty([])
 
-class LinearDecider(Decider):
+class LinearDecider:
     def __init__(self):
-        self.coefficients = np.array([5, 5, 5])
+        self.coefficients = np.array([1, 1, 1])
+
+    def ChooseLink(self, state, probs):
+        if len(state.link_queue) > 0:
+            link = state.link_queue[np.argmax(probs)]
+            print("link", link)
+            return link
+        else:
+            return None
 
     def CalcProbs(self, state):
         print("self.languages", state.languages)
@@ -98,7 +106,7 @@ class LinearDecider(Decider):
             #print("linkCost", linkCost)
             probs[linkIdx] = linkCost
 
-        probs = scipy.special.softmax(probs)
+        probs = probs #scipy.special.softmax(probs)
         #print("probs", probs.shape, np.sum(probs))
         return probs
 
@@ -205,7 +213,7 @@ def main(args):
 
         # logging of stats for comparing models (not used for training)
         reward = get_reward(state, new_state)
-        docs.append(str(len(new_state.parallel_documents)))
+        docs.append(len(new_state.parallel_documents))
         ep_reward += discount * reward
         discount *= gamma
         ##############################################################
@@ -215,7 +223,7 @@ def main(args):
         
     print("Finished")
     print(f"Reward: {ep_reward}")
-    print(f"Documents: {','.join(docs)}")
+    print(f"Documents: {','.join([str(x) for x in docs])}")
     return docs
 
 if __name__ == "__main__":
@@ -232,9 +240,15 @@ if __name__ == "__main__":
     #exit(1)
 
     crawl_histories = []
-    for x in range(1):
+    for x in range(3):
         crawl_histories.append(main(args))
     
-    print ("CRAWL HISTORIES")
+    print("CRAWL HISTORIES")
     for x in crawl_histories:
-        print(",".join(x))
+        print(",".join([str(y) for y in x]))
+    
+    print("AUC of CRAWL HISTORIES")
+    for x in crawl_histories:
+        print(sum(x))
+
+    print("Mean AUC for all crawl histories: ", np.mean([np.sum(x) for x in crawl_histories]))
