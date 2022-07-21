@@ -50,7 +50,15 @@ class State2():
         link_non_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language not in self.languages])
         link_non_targeted_langs = [sum(link_non_targeted_language_counter)]
 
-        return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
+        link_targeted_parent_language_counter = Counter([x.parent_lang for x in self.link_queue if x.parent_lang in self.languages])
+        link_targeted_parent_langs = [link_targeted_parent_language_counter[lang] for lang in self.languages]
+        link_non_targeted_parent_language_counter = Counter([x.parent_lang for x in self.link_queue if x.parent_lang not in self.languages])
+        link_non_targeted_parent_langs = [sum(link_non_targeted_parent_language_counter)]
+
+        ret = doc_targeted_langs + doc_non_targeted_langs \
+            + link_targeted_langs + link_non_targeted_langs \
+            + link_targeted_parent_langs + link_non_targeted_parent_langs
+        return ret
 
 
 class Decider:
