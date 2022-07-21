@@ -108,6 +108,7 @@ def create_start_state_from_node(root, languages, link_queue_limit):
     for li in root.links:
         link = Link(link_text=li.text,
                     link_text_lang=li.textLang,
+                    parent_lang=root.lang,
                     link_url=li.childNode.url,
                     link_url_id=li.childNode.urlId)
         state.add_link(link)
@@ -131,6 +132,7 @@ def transition_on_link(env, state, link_to_crawl):
     for child_link in crawled_child.links:
         link = Link(link_text=child_link.text,
                     link_text_lang=child_link.textLang,
+                    parent_lang=crawled_child.lang,
                     link_url=child_link.childNode.url,
                     link_url_id=child_link.childNode.urlId)
         new_state.add_link(link)
