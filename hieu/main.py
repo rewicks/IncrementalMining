@@ -50,17 +50,25 @@ class State2():
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
-class RandomDecider:
+
+class Decider:
+    def ChooseLink(self, state, probs):
+        if len(state.link_queue) > 0:
+            link = np.random.choice(state.link_queue, 1, p=probs)
+            print("link", link)
+            return link[0]
+        else:
+            return None
+
+class RandomDecider(Decider):
     def CalcProbs(self, state):
         ret = np.empty([len(state.link_queue)])
-        ret.fill(1./len(state.link_queue))
+        if len(state.link_queue) > 0:
+            ret.fill(1./len(state.link_queue))
+        else:
+            return np.empty([])
 
-    def ChooseLink(self, state, probs):
-        link = np.random.choice(state.link_queue, 1, p=probs)
-        print("link", link)
-        return link[0]
-
-class LinearDecider:
+class LinearDecider(Decider):
     def __init__(self):
         self.coefficients = np.array([5, 5, 5])
     def CalcProbs(self, state):
@@ -90,11 +98,6 @@ class LinearDecider:
         probs = scipy.special.softmax(probs)
         #print("probs", probs.shape, np.sum(probs))
         return probs
-
-    def ChooseLink(self, state, probs):
-        link = np.random.choice(state.link_queue, 1, p=probs)
-        print("link", link)
-        return link[0]
 
 ######################################################################################
 def create_start_state_from_node(root, languages, link_queue_limit):
@@ -164,7 +167,7 @@ def get_reward(state, new_state):
 ######################################################################################
 def main(args):
     print("Starting")
-    maxStep = 3 #1000
+    maxStep = 190000000000000000 #1000
     coefficients = np.array([5, 5, 5])
 
     sqlconn = MySQL(args.config_file)
@@ -189,6 +192,8 @@ def main(args):
     for t in range(1, maxStep):
         probs = decider.CalcProbs(state)
         link = decider.ChooseLink(state, probs)
+        if link is None: # No more links left to crawl
+            break
 
         new_state = transition_on_link(env, state, link)
         if new_state is None:
