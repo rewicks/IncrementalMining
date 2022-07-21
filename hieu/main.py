@@ -9,7 +9,7 @@ import scipy.special
 
 sys.path.append("..")
 from utils import MySQL, Languages
-from environment import Env, GetEnv, Dummy
+from environment import Env, GetEnv, Dummy, isParallel
 from state import Link, MonolingualDocument, ParallelDocument
 
 class State2():
@@ -107,10 +107,43 @@ def transition_on_link(env, state, link_to_crawl):
 
     new_state = State2(languages=state.languages, link_queue_limit = state.link_queue_limit)
 
+    for li in state.visited_links:
+        new_state.visited_links.add(li)
+    new_state.visited_links.add(crawled_child.url)
+
+    for li in state.link_queue:
+            new_state.add_link(li)
+
+    for child_link in crawled_child.links:
+        link = Link(link_text=child_link.text,
+                    link_text_lang=child_link.textLang,
+                    link_url=child_link.childNode.url,
+                    link_url_id=child_link.childNode.urlId)
+        new_state.add_link(link)
+
+    for parallel_doc in state.parallel_documents:
+        new_state.parallel_documents.append(parallel_doc)
+
+    crawled_doc = MonolingualDocument(docid=crawled_child.urlId, langid=crawled_child.lang)
+    aligned = False
+    for monolingual_doc in state.monolingual_documents:
+        if isParallel(env, crawled_doc, monolingual_doc):
+            parallel_doc = ParallelDocument(len(new_state.parallel_documents))
+            parallel_doc.add_document(crawled_doc.docid)
+            parallel_doc.add_document(monolingual_doc.docid)
+            new_state.parallel_documents.append(parallel_doc)
+            aligned = True
+        else:
+            new_state.monolingual_documents.append(monolingual_doc)
+
+    if not aligned:
+        new_state.monolingual_documents.append(crawled_doc)
+    return new_state
+
 ######################################################################################
 def main(args):
     print("Starting")
-    maxStep = 2 #000000
+    maxStep = 3 #1000000
     coefficients = np.array([5, 5, 5])
 
     sqlconn = MySQL(args.config_file)
@@ -126,6 +159,11 @@ def main(args):
         link = state.ChooseLink(probs)
         new_state = transition_on_link(env, state, link)
 
+        if new_state is None:
+            break
+
+        state = new_state
+        
     print("Finished")
 
 if __name__ == "__main__":
