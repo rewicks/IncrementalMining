@@ -190,8 +190,6 @@ def get_reward(state, new_state):
 ######################################################################################
 def main(args):
     print("Starting")
-    maxStep = 10000
-    coefficients = np.array([5, 5, 5])
     sqlconn = MySQL(args.config_file)
     languages = Languages(sqlconn)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
