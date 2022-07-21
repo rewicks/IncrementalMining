@@ -65,7 +65,7 @@ class Decider:
     def ChooseLink(self, state, probs):
         if len(state.link_queue) > 0:
             link = np.random.choice(state.link_queue, 1, p=probs)
-            print("link", link)
+            #print("link", link)
             return link[0]
         else:
             return None
@@ -83,10 +83,10 @@ class LinearDecider(Decider):
         self.coefficients = np.array([5, 5, 5, 5, 5, 5])
 
     def CalcProbs(self, state):
-        print("self.languages", state.languages)
+        #print("self.languages", state.languages)
         features = state.get_features()
         #features = np.array(self.get_features())
-        print("features", features)
+        #print("features", features)
 
         langCosts = features[:3]
         langCosts = scipy.special.softmax(langCosts)
