@@ -140,10 +140,17 @@ def transition_on_link(env, state, link_to_crawl):
         new_state.monolingual_documents.append(crawled_doc)
     return new_state
 
+def get_reward(state, new_state):
+    assert(new_state is not None)
+    new_documents = len(new_state.parallel_documents) - len(state.parallel_documents)
+    reward = new_documents * 100
+    return reward
+
+
 ######################################################################################
 def main(args):
     print("Starting")
-    maxStep = 3 #1000000
+    maxStep = 1000
     coefficients = np.array([5, 5, 5])
 
     sqlconn = MySQL(args.config_file)
@@ -154,17 +161,30 @@ def main(args):
 
     state = create_start_state_from_node(env.rootNode, langIds, args.linkQueueLimit)
 
+    ep_reward = 0
+    discount = 1.0
+    gamma = 0.95
+    docs = []
     for t in range(1, maxStep):
         probs = state.CalcProbs(coefficients)
         link = state.ChooseLink(probs)
         new_state = transition_on_link(env, state, link)
-
         if new_state is None:
             break
+
+        # logging of stats for comparing models (not used for training)
+        reward = get_reward(state, new_state)
+        docs.append(str(len(new_state.parallel_documents)))
+        ep_reward += discount * reward
+        discount *= gamma
+        ##############################################################
+
 
         state = new_state
         
     print("Finished")
+    print(f"Reward: {ep_reward}")
+    print(f"Documents: {','.join(docs)}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
