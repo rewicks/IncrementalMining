@@ -80,7 +80,7 @@ class RandomDecider(Decider):
 
 class LinearDecider(Decider):
     def __init__(self):
-        self.coefficients = np.array([5, 5, 5])
+        self.coefficients = np.array([5, 5, 5, 5, 5, 5])
 
     def CalcProbs(self, state):
         print("self.languages", state.languages)
@@ -93,7 +93,7 @@ class LinearDecider(Decider):
 
         probs = np.empty([len(state.link_queue)])
         for linkIdx, link in enumerate(state.link_queue):
-            costs = np.zeros([3])
+            costs = np.zeros([6])
             #print(link.language) 
             if link.language == state.languages[0]:
                 costs[0] = langCosts[0]
@@ -101,6 +101,14 @@ class LinearDecider(Decider):
                 costs[1] = langCosts[1]
             else:
                 costs[2] = langCosts[2]
+
+            if link.parent_lang == state.languages[0]:
+                costs[3] = langCosts[0]
+            elif link.parent_lang == state.languages[1]:
+                costs[4] = langCosts[1]
+            else:
+                costs[5] = langCosts[2]
+
             #print("costs", costs)
             linkCost = np.inner(self.coefficients, costs)
             #print("linkCost", linkCost)
