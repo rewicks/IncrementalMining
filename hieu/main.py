@@ -89,7 +89,7 @@ def main(args):
 
     from skopt import gp_minimize
     res = gp_minimize(tryLinear,                  # the function to minimize
-                  [(-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0)],      # the bounds on each dimension of x
+                  [(-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (0, 5.0)],      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
                   n_calls=15,         # the number of evaluations of f
                   n_random_starts=5,  # the number of random initialization points

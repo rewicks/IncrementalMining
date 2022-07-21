@@ -20,7 +20,7 @@ class RandomDecider(Decider):
             return np.empty([])
 
 class LinearDecider(Decider):
-    def __init__(self, coeffs = np.array([5, 5, 5, 5, 5, 5])):
+    def __init__(self, coeffs = np.array([5, 5, 5, 5, 5, 5, 5])):
         self.coefficients = coeffs
 
     def ChooseLink(self, state, probs):
@@ -42,7 +42,7 @@ class LinearDecider(Decider):
 
         probs = np.empty([len(state.link_queue)])
         for linkIdx, link in enumerate(state.link_queue):
-            costs = np.zeros([6])
+            costs = np.zeros([7])
             #print(link.language) 
             if link.language == state.languages[0]:
                 costs[0] = langCosts[0]
@@ -57,6 +57,10 @@ class LinearDecider(Decider):
                 costs[4] = langCosts[1]
             else:
                 costs[5] = langCosts[2]
+
+            # anchor text
+            if link.link_text in ["en", "Eng", "English", "fr", "Fra", "Français", "Francais"]:
+                costs[6] = 1
 
             #print("costs", costs)
             linkCost = np.inner(self.coefficients, costs)
