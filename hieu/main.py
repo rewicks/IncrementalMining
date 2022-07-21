@@ -47,6 +47,27 @@ class State2():
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
+    def CalcProbs(self, coefficients):
+        for link in self.link_queue:
+            print(link.language) 
+
+        features = np.array(self.get_features())
+        print("features", features)
+
+        sumDocs = features[0] + features[1] + features[2]
+        sumLinks = features[3] + features[4] + features[5]
+
+        scores = np.empty(features.shape)
+        scores[0] = SafeDiv(sumDocs, features[0])
+        scores[1] = SafeDiv(sumDocs, features[1])
+        scores[2] = SafeDiv(sumDocs, features[2])
+
+        scores[3] = SafeDiv(sumLinks, features[3]) 
+        scores[4] = SafeDiv(sumLinks, features[4])
+        scores[5] = SafeDiv(sumLinks, features[5])
+        print("scores", scores)
+
+
 def create_start_state_from_node(root, languages, link_queue_limit):
     state = State2(languages, link_queue_limit=link_queue_limit)
 
@@ -69,25 +90,6 @@ def SafeDiv(a, b):
         return 10
     else:
         return a / b
-
-def CalcProbs(state, coefficients):
-    features = np.array(state.get_features())
-    print("features", features)
-
-    sumDocs = features[0] + features[1] + features[2]
-    sumLinks = features[3] + features[4] + features[5]
-
-    scores = np.empty(features.shape)
-    scores[0] = SafeDiv(sumDocs, features[0])
-    scores[1] = SafeDiv(sumDocs, features[1])
-    scores[2] = SafeDiv(sumDocs, features[2])
-
-    scores[3] = SafeDiv(sumLinks, features[3]) 
-    scores[4] = SafeDiv(sumLinks, features[4])
-    scores[5] = SafeDiv(sumLinks, features[5])
-    print("scores", scores)
-
-
     
 ######################################################################################
 def main(args):
@@ -104,7 +106,7 @@ def main(args):
     state = create_start_state_from_node(env.rootNode, langIds, args.linkQueueLimit)
 
     for t in range(1, maxStep):
-        CalcProbs(state, coefficients)
+        state.CalcProbs(coefficients)
 
 
     print("Finished")
