@@ -20,8 +20,8 @@ class RandomDecider(Decider):
             return np.empty([])
 
 class LinearDecider(Decider):
-    def __init__(self):
-        self.coefficients = np.array([5, 5, 5, 5, 5, 5])
+    def __init__(self, coeffs = np.array([5, 5, 5, 5, 5, 5])):
+        self.coefficients = coeffs
 
     def ChooseLink(self, state, probs):
         if len(state.link_queue) > 0:

@@ -14,7 +14,7 @@ from state import *
 from decider import *
 from matplotlib import pyplot as plt
 
-def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet):
+def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs = None):
     state = create_start_state_from_node(env.rootNode, langIds, linkQueueLimit)
 
     ep_reward = 0
@@ -24,7 +24,7 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet):
     if algorithm == 'random':
         decider = RandomDecider()
     elif algorithm == 'linear':
-        decider = LinearDecider()
+        decider = LinearDecider(coeffs)
     else:
         decider = None
 
@@ -58,7 +58,7 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet):
         print(f"Documents: {','.join([str(x) for x in docs])}")
 
     crawl_histories = []
-    for x in range(3):
+    for x in range(1):
         crawl_histories.append(docs)
     
     if not quiet:
@@ -80,8 +80,25 @@ def main(args):
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     # env = Dummy()
     env = GetEnv(args.config_file, languages, args.host_name)
-    docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
-    docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet)
+    #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
+
+    def tryLinear(coeffs):
+        ret = sum(trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs))
+        print("SUM:", ret, "Params:", coeffs)
+        return ret
+
+    from skopt import gp_minimize
+    res = gp_minimize(tryLinear,                  # the function to minimize
+                  [(-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0)],      # the bounds on each dimension of x
+                  acq_func="EI",      # the acquisition function
+                  n_calls=15,         # the number of evaluations of f
+                  n_random_starts=5,  # the number of random initialization points
+                  noise=0.1**2,       # the noise level (optional)
+                  random_state=1234)   # the random seed
+    print(res)
+    print("x^*=%.4f, f(x^*)=%.4f" % (res.x[0], res.fun))
+
+    #docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -101,4 +118,3 @@ if __name__ == "__main__":
         logger.disabled = True
 
     main(args)
-
