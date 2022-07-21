@@ -65,7 +65,7 @@ class Decider:
     def ChooseLink(self, state, probs):
         if len(state.link_queue) > 0:
             link = np.random.choice(state.link_queue, 1, p=probs)
-            print("link", link)
+            #print("link", link)
             return link[0]
         else:
             return None
@@ -80,20 +80,28 @@ class RandomDecider(Decider):
 
 class LinearDecider(Decider):
     def __init__(self):
-        self.coefficients = np.array([5, 5, 5])
+        self.coefficients = np.array([5, 5, 5, 5, 5, 5])
+
+    def ChooseLink(self, state, probs):
+        if len(state.link_queue) > 0:
+            link = state.link_queue[np.argmax(probs)]
+            #print("link", link)
+            return link
+        else:
+            return None
 
     def CalcProbs(self, state):
-        print("self.languages", state.languages)
+        #print("self.languages", state.languages)
         features = state.get_features()
         #features = np.array(self.get_features())
-        print("features", features)
+        #print("features", features)
 
         langCosts = features[:3]
         langCosts = scipy.special.softmax(langCosts)
 
         probs = np.empty([len(state.link_queue)])
         for linkIdx, link in enumerate(state.link_queue):
-            costs = np.zeros([3])
+            costs = np.zeros([6])
             #print(link.language) 
             if link.language == state.languages[0]:
                 costs[0] = langCosts[0]
@@ -101,6 +109,14 @@ class LinearDecider(Decider):
                 costs[1] = langCosts[1]
             else:
                 costs[2] = langCosts[2]
+
+            if link.parent_lang == state.languages[0]:
+                costs[3] = langCosts[0]
+            elif link.parent_lang == state.languages[1]:
+                costs[4] = langCosts[1]
+            else:
+                costs[5] = langCosts[2]
+
             #print("costs", costs)
             linkCost = np.inner(self.coefficients, costs)
             #print("linkCost", linkCost)
@@ -178,32 +194,22 @@ def get_reward(state, new_state):
     reward = new_documents * 100
     return reward
 
-
 ######################################################################################
-def main(args):
-    print("Starting")
-    maxStep = 10000
-    coefficients = np.array([5, 5, 5])
-    sqlconn = MySQL(args.config_file)
-    languages = Languages(sqlconn)
-    langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
-    # env = Dummy()
-    env = GetEnv(args.config_file, languages, args.host_name)
-
-    state = create_start_state_from_node(env.rootNode, langIds, args.linkQueueLimit)
+def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep):
+    state = create_start_state_from_node(env.rootNode, langIds, linkQueueLimit)
 
     ep_reward = 0
     discount = 1.0
     gamma = 0.95
     docs = []
-    if args.algorithm == 'random':
+    if algorithm == 'random':
         decider = RandomDecider()
-    elif args.algorithm == 'linear':
+    elif algorithm == 'linear':
         decider = LinearDecider()
     else:
         decider = None
 
-    for t in range(1, args.maxStep):
+    for t in range(1, maxStep):
         probs = decider.CalcProbs(state)
         if probs is not None:
             link = decider.ChooseLink(state, probs)
@@ -220,22 +226,48 @@ def main(args):
 
         # logging of stats for comparing models (not used for training)
         reward = get_reward(state, new_state)
-        docs.append(str(len(new_state.parallel_documents)))
+        docs.append(len(new_state.parallel_documents))
         ep_reward += discount * reward
         discount *= gamma
         ##############################################################
 
-
         state = new_state
-        
-    print("Finished")
+
     print(f"Reward: {ep_reward}")
-    print(f"Documents: {','.join(docs)}")
+    print(f"Documents: {','.join([str(x) for x in docs])}")
+
+    crawl_histories = []
+    for x in range(3):
+        crawl_histories.append(docs)
+    
+    print("CRAWL HISTORIES")
+    for x in crawl_histories:
+        print(",".join([str(y) for y in x]))
+    
+    print("AUC of CRAWL HISTORIES")
+    for x in crawl_histories:
+        print(sum(x))
+
+    print("Mean AUC for all crawl histories: ", np.mean([np.sum(x) for x in crawl_histories]))
     return docs
+
+######################################################################################
+def main(args):
+    print("Starting")
+    sqlconn = MySQL(args.config_file)
+    languages = Languages(sqlconn)
+    langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
+    # env = Dummy()
+    env = GetEnv(args.config_file, languages, args.host_name)
+
+    docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep)
+    docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep)
+
+    print("Finished")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', default="random")
+    #parser.add_argument('--algorithm', default="random")
     parser.add_argument('--config-file', default="../config.ini")
     parser.add_argument('--host-name', default="http://www.visitbritain.com/")
     parser.add_argument('--lang-pair', default="en-fr")
@@ -246,10 +278,4 @@ if __name__ == "__main__":
     #print("cpu", args.cpu)
     #exit(1)
 
-    crawl_histories = []
-    for x in range(1):
-        crawl_histories.append(main(args))
-    
-    print ("CRAWL HISTORIES")
-    for x in crawl_histories:
-        print(",".join(x))
+    main(args)
