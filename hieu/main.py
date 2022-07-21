@@ -13,6 +13,8 @@ from utils import MySQL, Languages
 from environment import Env, GetEnv, Dummy, isParallel
 from state import Link, MonolingualDocument, ParallelDocument
 
+from matplotlib import pyplot as plt
+
 class State2():
     def __init__(self, languages, link_queue_limit):
 
@@ -71,6 +73,7 @@ class RandomDecider(Decider):
 class LinearDecider(Decider):
     def __init__(self):
         self.coefficients = np.array([5, 5, 5])
+
     def CalcProbs(self, state):
         print("self.languages", state.languages)
         features = state.get_features()
@@ -191,7 +194,9 @@ def main(args):
     for t in range(1, args.maxStep):
         probs = decider.CalcProbs(state)
         link = decider.ChooseLink(state, probs)
+
         if link is None: # No more links left to crawl
+            print("Exhausted all links in the queue. Nothing left to do")
             break
 
         new_state = transition_on_link(env, state, link)
@@ -211,6 +216,7 @@ def main(args):
     print("Finished")
     print(f"Reward: {ep_reward}")
     print(f"Documents: {','.join(docs)}")
+    return docs
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -224,4 +230,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     #print("cpu", args.cpu)
     #exit(1)
-    main(args)
+
+    crawl_histories = []
+    for x in range(1):
+        crawl_histories.append(main(args))
+    
+    print ("CRAWL HISTORIES")
+    for x in crawl_histories:
+        print(",".join(x))
