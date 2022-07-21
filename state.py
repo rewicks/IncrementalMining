@@ -48,14 +48,14 @@ class State():
         doc_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language in self.languages])
         doc_targeted_langs = [doc_targeted_language_counter[lang] for lang in self.languages]
         doc_non_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language not in self.languages])
-        doc_non_targeted_langs = [sum(doc_non_targeted_language_counter)]
+        doc_non_targeted_langs = [sum(doc_non_targeted_language_counter.values())]
 
 
         # link counters
         link_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language in self.languages])
         link_targeted_langs = [link_targeted_language_counter[lang] for lang in self.languages]
         link_non_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language not in self.languages])
-        link_non_targeted_langs = [sum(link_non_targeted_language_counter)]
+        link_non_targeted_langs = [sum(link_non_targeted_language_counter.values())]
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
@@ -117,6 +117,7 @@ def transition_on_lang_prob(env, state, decision):
     for child_link in crawled_child.links:
         link = Link(link_text=child_link.text,
                     link_text_lang=child_link.textLang,
+                    parent_lang=0,
                     link_url=child_link.childNode.url,
                     link_url_id=child_link.childNode.urlId)
         new_state.add_link(link)
@@ -153,6 +154,7 @@ def create_start_state_from_node(root, languages, link_queue_limit):
         link = Link(link_text=li.text,
                     link_text_lang=li.textLang,
                     link_url=li.childNode.url,
+                    parent_lang=0,
                     link_url_id=li.childNode.urlId)
         state.add_link(link)
     

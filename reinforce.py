@@ -76,7 +76,8 @@ class ReinforceDecider:
 
         self.gamma = args.gamma
         self.policy = Policy(3, 3, args.hiddenDim, self.device).to(self.device)
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=args.learningRate)
+        # self.optimizer = optim.Adam(self.policy.parameters(), lr=args.learningRate)
+        self.optimizer = optim.SGD(self.policy.parameters(), lr=args.learningRate)
         self.eps = np.finfo(np.float32).eps.item()
         self.get_action_from_predictions = get_action_from_predictions
         self.env_step = env_step
@@ -107,6 +108,7 @@ class ReinforceDecider:
             state = initial_state
             ep_reward = 0
             discount = 1.0
+            docs = []
             for t in range(1, maxStep):
                 features = np.array(state.get_features())
                 # [2 0 0 0 0 0]
@@ -120,6 +122,8 @@ class ReinforceDecider:
                 new_state = self.env_step(self.env, state, action)
                 if new_state is None:
                     break
+                docs.append(len(new_state.parallel_documents))
+
                 reward = self.get_reward(action, state, new_state)
                 self.policy.rewards.append(reward)
                 ep_reward += discount * reward
@@ -129,8 +133,10 @@ class ReinforceDecider:
 
             running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             self.finish_episode()
-            print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
+            logging.info('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                 i_episode, ep_reward, running_reward))
+            logging.info(f"DOCUMENTS: {'.'.join([str(d) for d in docs])}")
+            logging.info(f"AUC: {sum(docs)}")
             if i_episode % args['log_interval'] == 0:
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                     i_episode, ep_reward, running_reward))
@@ -142,7 +148,7 @@ class ReinforceDecider:
     def get_reward(self, action, state, new_state):
         assert(new_state is not None)
         new_documents = len(new_state.parallel_documents) - len(state.parallel_documents)
-        reward = new_documents * 100
+        reward = (new_documents * 10) - 1
         return reward
 
     def predict(self, state, features):
