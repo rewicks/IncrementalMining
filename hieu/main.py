@@ -78,7 +78,7 @@ class RandomDecider(Decider):
         else:
             return np.empty([])
 
-class LinearDecider:
+class LinearDecider(Decider):
     def __init__(self):
         self.coefficients = np.array([5, 5, 5, 5, 5, 5])
 
@@ -124,7 +124,7 @@ class LinearDecider:
 
         if len(probs) == 0:
             return None
-        probs = probs #scipy.special.softmax(probs)
+        probs = scipy.special.softmax(probs)
         #print("probs", probs.shape, np.sum(probs))
         return probs
 
