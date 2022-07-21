@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from hashlib import algorithms_available
 import os
 import sys
 import logging
@@ -49,27 +50,40 @@ class State2():
 
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
-    def CalcProbs(self, coefficients):
-        print("self.languages", self.languages)
-        features = self.get_features()
+class RandomDecider:
+    def CalcProbs(self, state):
+        ret = np.empty([len(state.link_queue)])
+        ret.fill(1./len(state.link_queue))
+
+    def ChooseLink(self, state, probs):
+        link = np.random.choice(state.link_queue, 1, p=probs)
+        print("link", link)
+        return link[0]
+
+class LinearDecider:
+    def __init__(self):
+        self.coefficients = np.array([5, 5, 5])
+    def CalcProbs(self, state):
+        print("self.languages", state.languages)
+        features = state.get_features()
         #features = np.array(self.get_features())
         print("features", features)
 
         langCosts = features[:3]
         langCosts = scipy.special.softmax(langCosts)
 
-        probs = np.empty([len(self.link_queue)])
-        for linkIdx, link in enumerate(self.link_queue):
+        probs = np.empty([len(state.link_queue)])
+        for linkIdx, link in enumerate(state.link_queue):
             costs = np.zeros([3])
             #print(link.language) 
-            if link.language == self.languages[0]:
+            if link.language == state.languages[0]:
                 costs[0] = langCosts[0]
-            elif link.language == self.languages[1]:
+            elif link.language == state.languages[1]:
                 costs[1] = langCosts[1]
             else:
                 costs[2] = langCosts[2]
             #print("costs", costs)
-            linkCost = np.inner(coefficients, costs)
+            linkCost = np.inner(self.coefficients, costs)
             #print("linkCost", linkCost)
             probs[linkIdx] = linkCost
 
@@ -77,8 +91,8 @@ class State2():
         #print("probs", probs.shape, np.sum(probs))
         return probs
 
-    def ChooseLink(self, probs):
-        link = np.random.choice(self.link_queue, 1, p=probs)
+    def ChooseLink(self, state, probs):
+        link = np.random.choice(state.link_queue, 1, p=probs)
         print("link", link)
         return link[0]
 
@@ -150,7 +164,7 @@ def get_reward(state, new_state):
 ######################################################################################
 def main(args):
     print("Starting")
-    maxStep = 1000
+    maxStep = 3 #1000
     coefficients = np.array([5, 5, 5])
 
     sqlconn = MySQL(args.config_file)
@@ -165,9 +179,17 @@ def main(args):
     discount = 1.0
     gamma = 0.95
     docs = []
+    if args.algorithm == 'random':
+        decider = RandomDecider()
+    elif args.algorithm == 'linear':
+        decider = LinearDecider()
+    else:
+        decider = None
+
     for t in range(1, maxStep):
-        probs = state.CalcProbs(coefficients)
-        link = state.ChooseLink(probs)
+        probs = decider.CalcProbs(state)
+        link = decider.ChooseLink(state, probs)
+
         new_state = transition_on_link(env, state, link)
         if new_state is None:
             break
@@ -188,6 +210,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--algorithm', default="random")
     parser.add_argument('--config-file', default="../config.ini")
     parser.add_argument('--host-name', default="http://www.visitbritain.com/")
     parser.add_argument('--lang-pair', default="en-fr")
