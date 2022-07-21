@@ -28,22 +28,23 @@ class State2():
         doc_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language in self.languages])
         doc_targeted_langs = [doc_targeted_language_counter[lang] for lang in self.languages]
         doc_non_targeted_language_counter = Counter([x.language for x in self.monolingual_documents if x.language not in self.languages])
-        doc_non_targeted_langs = [sum(doc_non_targeted_language_counter)]
+        doc_non_targeted_langs = [sum(doc_non_targeted_language_counter.values())]
 
         # link counters
         link_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language in self.languages])
         link_targeted_langs = [link_targeted_language_counter[lang] for lang in self.languages]
         link_non_targeted_language_counter = Counter([x.language for x in self.link_queue if x.language not in self.languages])
-        link_non_targeted_langs = [sum(link_non_targeted_language_counter)]
+        link_non_targeted_langs = [sum(link_non_targeted_language_counter.values())]
 
         link_targeted_parent_language_counter = Counter([x.parent_lang for x in self.link_queue if x.parent_lang in self.languages])
         link_targeted_parent_langs = [link_targeted_parent_language_counter[lang] for lang in self.languages]
         link_non_targeted_parent_language_counter = Counter([x.parent_lang for x in self.link_queue if x.parent_lang not in self.languages])
-        link_non_targeted_parent_langs = [sum(link_non_targeted_parent_language_counter)]
+        link_non_targeted_parent_langs = [sum(link_non_targeted_parent_language_counter.values())]
 
         ret = doc_targeted_langs + doc_non_targeted_langs \
             + link_targeted_langs + link_non_targeted_langs \
             + link_targeted_parent_langs + link_non_targeted_parent_langs
+        assert(ret[3] + ret[4] + ret[5] == ret[6] + ret[7] + ret[8])
         return ret
 
 
