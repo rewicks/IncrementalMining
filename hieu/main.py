@@ -4,6 +4,7 @@ import sys
 import argparse
 import numpy as np
 from collections import Counter
+import scipy.special
 
 sys.path.append("..")
 from utils import MySQL, Languages
@@ -48,12 +49,24 @@ class State2():
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
     def CalcProbs(self, coefficients):
-        features = np.array(self.get_features())
+        print("self.languages", self.languages)
+        features = self.get_features()
+        #features = np.array(self.get_features())
         print("features", features)
+
+        langCosts = features[:3]
+        langCosts = scipy.special.softmax(langCosts)
+
         probs = np.empty([len(self.link_queue)])
         for link in self.link_queue:
+            costs = np.zeros([3])
             #print(link.language) 
-            pass
+            if link.language == self.languages[0]:
+                costs[0] = langCosts[0]
+            elif link.language == self.languages[1]:
+                costs[1] = langCosts[1]
+            else:
+                costs[2] = langCosts[2]
 
         print("probs", probs.shape)
         return probs
