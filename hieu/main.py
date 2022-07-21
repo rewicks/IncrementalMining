@@ -166,7 +166,6 @@ def get_reward(state, new_state):
 ######################################################################################
 def main(args):
     print("Starting")
-    maxStep = 3 #1000
     coefficients = np.array([5, 5, 5])
 
     sqlconn = MySQL(args.config_file)
@@ -188,7 +187,7 @@ def main(args):
     else:
         decider = None
 
-    for t in range(1, maxStep):
+    for t in range(1, args.maxStep):
         probs = decider.CalcProbs(state)
         link = decider.ChooseLink(state, probs)
 
@@ -217,6 +216,7 @@ if __name__ == "__main__":
     parser.add_argument('--host-name', default="http://www.visitbritain.com/")
     parser.add_argument('--lang-pair', default="en-fr")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
+    parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
 
     args = parser.parse_args()
     #print("cpu", args.cpu)
