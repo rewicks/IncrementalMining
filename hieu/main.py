@@ -114,6 +114,8 @@ class LinearDecider(Decider):
             #print("linkCost", linkCost)
             probs[linkIdx] = linkCost
 
+        if len(probs) == 0:
+            return None
         probs = scipy.special.softmax(probs)
         #print("probs", probs.shape, np.sum(probs))
         return probs
@@ -188,6 +190,8 @@ def get_reward(state, new_state):
 ######################################################################################
 def main(args):
     print("Starting")
+    maxStep = 10000
+    coefficients = np.array([5, 5, 5])
     sqlconn = MySQL(args.config_file)
     languages = Languages(sqlconn)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
@@ -209,14 +213,17 @@ def main(args):
 
     for t in range(1, args.maxStep):
         probs = decider.CalcProbs(state)
-        link = decider.ChooseLink(state, probs)
+        if probs is not None:
+            link = decider.ChooseLink(state, probs)
 
-        if link is None: # No more links left to crawl
-            print("Exhausted all links in the queue. Nothing left to do")
-            break
+            if link is None: # No more links left to crawl
+                print("Exhausted all links in the queue. Nothing left to do")
+                break
 
-        new_state = transition_on_link(env, state, link)
-        if new_state is None:
+            new_state = transition_on_link(env, state, link)
+            if new_state is None:
+                break
+        else:
             break
 
         # logging of stats for comparing models (not used for training)
