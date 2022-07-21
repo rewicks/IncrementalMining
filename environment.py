@@ -55,7 +55,7 @@ def GetEnv(configFile, languages, url):
             env = pickle.load(f)
     # change language of start node. 0 = stop
     env.nodes[sys.maxsize].lang = languages.GetLang("None")
-    logging.info(f"\tlen(env.nodes)\t{env.nodes}\t{env.numAligned}\taligned docs")
+    #logging.info(f"\tlen(env.nodes)\t{env.nodes}\t{env.numAligned}\taligned docs")
 
     logging.info(f"env created\t{url}")
     return env

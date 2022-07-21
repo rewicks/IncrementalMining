@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import logging
 import argparse
 import numpy as np
 from collections import Counter
@@ -67,14 +68,19 @@ class State2():
                 costs[1] = langCosts[1]
             else:
                 costs[2] = langCosts[2]
-            print("costs", costs)
+            #print("costs", costs)
             linkCost = np.inner(coefficients, costs)
-            print("linkCost", linkCost)
+            #print("linkCost", linkCost)
             probs[linkIdx] = linkCost
 
         probs = scipy.special.softmax(probs)
-        print("probs", probs.shape, np.sum(probs))
+        #print("probs", probs.shape, np.sum(probs))
         return probs
+
+    def ChooseLink(self, probs):
+        link = np.random.choice(self.link_queue, 1, p=probs)
+        print("link", link)
+        return link[0]
 
 ######################################################################################
 def create_start_state_from_node(root, languages, link_queue_limit):
@@ -93,13 +99,14 @@ def create_start_state_from_node(root, languages, link_queue_limit):
         state.add_link(link)
 
     return state
-######################################################################################
-def SafeDiv(a, b):
-    if b == 0:
-        return 10
-    else:
-        return a / b
     
+def transition_on_link(env, state, link_to_crawl):
+    crawled_child = env.crawl_child(link_to_crawl.id)
+    if crawled_child.lang != link_to_crawl.language:
+        logging.info(f"Crawled child was in language {crawled_child.lang} but wanted to crawl {link_to_crawl.language}")
+
+    new_state = State2(languages=state.languages, link_queue_limit = state.link_queue_limit)
+
 ######################################################################################
 def main(args):
     print("Starting")
@@ -115,8 +122,9 @@ def main(args):
     state = create_start_state_from_node(env.rootNode, langIds, args.linkQueueLimit)
 
     for t in range(1, maxStep):
-        state.CalcProbs(coefficients)
-
+        probs = state.CalcProbs(coefficients)
+        link = state.ChooseLink(probs)
+        new_state = transition_on_link(env, state, link)
 
     print("Finished")
 
