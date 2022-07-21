@@ -76,8 +76,8 @@ class ReinforceDecider:
 
         self.gamma = args.gamma
         self.policy = Policy(3, 3, args.hiddenDim, self.device).to(self.device)
-        # self.optimizer = optim.Adam(self.policy.parameters(), lr=args.learningRate)
-        self.optimizer = optim.SGD(self.policy.parameters(), lr=args.learningRate)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=args.learningRate)
+        # self.optimizer = optim.SGD(self.policy.parameters(), lr=args.learningRate)
         self.eps = np.finfo(np.float32).eps.item()
         self.get_action_from_predictions = get_action_from_predictions
         self.env_step = env_step
@@ -135,7 +135,7 @@ class ReinforceDecider:
             self.finish_episode()
             logging.info('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                 i_episode, ep_reward, running_reward))
-            logging.info(f"DOCUMENTS: {'.'.join([str(d) for d in docs])}")
+            logging.info(f"DOCUMENTS: {','.join([str(d) for d in docs])}")
             logging.info(f"AUC: {sum(docs)}")
             if i_episode % args['log_interval'] == 0:
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
