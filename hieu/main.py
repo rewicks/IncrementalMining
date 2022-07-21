@@ -48,25 +48,15 @@ class State2():
         return doc_targeted_langs + doc_non_targeted_langs + link_targeted_langs + link_non_targeted_langs
 
     def CalcProbs(self, coefficients):
-        for link in self.link_queue:
-            print(link.language) 
-
         features = np.array(self.get_features())
         print("features", features)
+        probs = np.empty([len(self.link_queue)])
+        for link in self.link_queue:
+            #print(link.language) 
+            pass
 
-        sumDocs = features[0] + features[1] + features[2]
-        sumLinks = features[3] + features[4] + features[5]
-
-        scores = np.empty(features.shape)
-        scores[0] = SafeDiv(sumDocs, features[0])
-        scores[1] = SafeDiv(sumDocs, features[1])
-        scores[2] = SafeDiv(sumDocs, features[2])
-
-        scores[3] = SafeDiv(sumLinks, features[3]) 
-        scores[4] = SafeDiv(sumLinks, features[4])
-        scores[5] = SafeDiv(sumLinks, features[5])
-        print("scores", scores)
-
+        print("probs", probs.shape)
+        return probs
 
 def create_start_state_from_node(root, languages, link_queue_limit):
     state = State2(languages, link_queue_limit=link_queue_limit)
