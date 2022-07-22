@@ -42,25 +42,28 @@ class LinearDecider(Decider):
 
         probs = np.empty([len(state.link_queue)])
         for linkIdx, link in enumerate(state.link_queue):
-            costs = np.zeros([7])
-            #print(link.language) 
+            costs = np.zeros([9])
+            #print(link.languaue) 
+            for i, lCost in enumerate(langCosts):
+                costs[i] = lCost
+
             if link.language == state.languages[0]:
-                costs[0] = langCosts[0]
+                costs[3] = 1
             elif link.language == state.languages[1]:
-                costs[1] = langCosts[1]
+                costs[4] = 1
             else:
-                costs[2] = langCosts[2]
+                costs[5] = 1
 
             if link.parent_lang == state.languages[0]:
-                costs[3] = langCosts[0]
+                costs[6] = 1
             elif link.parent_lang == state.languages[1]:
-                costs[4] = langCosts[1]
+                costs[7] = 1
             else:
-                costs[5] = langCosts[2]
+                costs[8] = 1
 
-            # anchor text
-            if link.link_text in ["en", "Eng", "English", "Anglais", "fr", "Fra", "Français", "Francais"]:
-                costs[6] = len(state.link_queue)
+            # # anchor text
+            # if link.link_text in ["en", "Eng", "English", "Anglais", "fr", "Fra", "Français", "Francais"]:
+            #     costs[6] = len(state.link_queue)
 
             #print("costs", costs)
             linkCost = np.inner(self.coefficients, costs)
