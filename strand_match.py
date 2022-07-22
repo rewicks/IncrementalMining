@@ -216,3 +216,10 @@ def FindStrandMatch(candidate_url, candidate_lang, existing_urls, existing_lang)
         return norm2idx[stripped_uri]
     return -1
 
+
+a = FindStrandMatch("https://www.visitbritain.com/gb/en/plan-your-trip/getting-around-britain/travelling-coach", 
+        "en", 
+        ["https://www.visitbritain.com/gb/fr/plan-your-trip/getting-around-britain/travelling-coach"],
+        #["https://www.visitbritain.com/fr/fr/preparez-votre-voyage/transports-en-grande-bretagne/se-deplacer-en-bus"],
+        "fr")
+print(a)
