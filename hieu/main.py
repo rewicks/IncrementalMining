@@ -89,7 +89,7 @@ def main(args):
 
     from skopt import gp_minimize
     range_bound = 100.0
-    num_coeff = 9
+    num_coeff = 6
     ranges = []
     for x in range(num_coeff):
         ranges.append((-range_bound, range_bound))
