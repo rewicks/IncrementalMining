@@ -62,7 +62,7 @@ class LinearDecider(Decider):
             if link.link_text in ["en", "Eng", "English", "Anglais"]:
                 cost[4] = features[1] - features[0]
                 cost[5] = features[3] - features[4]
-            elif link.link_text in ["fr", "Fra", "Français", "Francais"]:
+            elif link.link_text in ["fr", "Fra", "Français", "Francais", "Französisch"]:
                 cost[4] = features[0] - features[1]
                 cost[5] = features[4] - features[3]
 
