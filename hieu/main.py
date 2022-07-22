@@ -89,16 +89,16 @@ def main(args):
 
     from skopt import gp_minimize
     res = gp_minimize(tryLinear,                  # the function to minimize
-                  [(-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (0, 5.0)],      # the bounds on each dimension of x
+                  [(-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (0, 10.0)],      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
-                  n_calls=15,         # the number of evaluations of f
+                  n_calls=50,         # the number of evaluations of f
                   n_random_starts=5,  # the number of random initialization points
                   noise=0.1**2,       # the noise level (optional)
                   random_state=1234)   # the random seed
     print(res)
     print("x^*=%.4f, f(x^*)=%.4f" % (res.x[0], res.fun))
 
-    #docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet)
+    # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 10.0])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
