@@ -60,7 +60,7 @@ class LinearDecider(Decider):
 
             # anchor text
             if link.link_text in ["en", "Eng", "English", "Anglais", "fr", "Fra", "Français", "Francais"]:
-                costs[6] = 1
+                costs[6] = len(state.link_queue)
 
             #print("costs", costs)
             linkCost = np.inner(self.coefficients, costs)
