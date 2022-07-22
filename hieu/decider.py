@@ -20,7 +20,7 @@ class RandomDecider(Decider):
             return np.empty([])
 
 class LinearDecider(Decider):
-    def __init__(self, coeffs = np.array([5, 5, 5, 5, 5, 5, 5])):
+    def __init__(self, coeffs = np.array([5, 5, 5, 5, 5, 5, 5, 5])):
         self.coefficients = coeffs
 
     def ChooseLink(self, state, probs):
@@ -38,28 +38,39 @@ class LinearDecider(Decider):
         #print("features", features)
 
         langCosts = features[:3]
-        langCosts = scipy.special.softmax(langCosts)
+        # langCosts = scipy.special.softmax(langCosts)
 
         probs = np.empty([len(state.link_queue)])
         for linkIdx, link in enumerate(state.link_queue):
             costs = np.zeros([9])
             #print(link.languaue) 
-            for i, lCost in enumerate(langCosts):
-                costs[i] = lCost
+
+        probs = np.empty([len(state.link_queue)])
+        for linkIdx, link in enumerate(state.link_queue):
+            costs = np.zeros([6])
+            #print(link.language) 
 
             if link.language == state.languages[0]:
-                costs[3] = 1
+                cost[0] = features[0] - features[1]
+                cost[1] = features[3] - features[4]
             elif link.language == state.languages[1]:
-                costs[4] = 1
-            else:
-                costs[5] = 1
+                cost[0] = features[1] - features[0]
+                cost[1] = features[4] - features[3]
 
             if link.parent_lang == state.languages[0]:
-                costs[6] = 1
+                cost[2] = features[0] - features[1]
+                cost[3] = features[3] - features[4]
             elif link.parent_lang == state.languages[1]:
-                costs[7] = 1
-            else:
-                costs[8] = 1
+                cost[2] = features[1] - features[0]
+                cost[3] = features[4] - features[3]
+            
+            if link.link_text in ["en", "Eng", "English", "Anglais"]:
+                cost[4] = features[1] - features[0]
+                cost[5] = features[3] - features[4]
+            elif link.link_text in ["fr", "Fra", "Français", "Francais"]:
+                cost[4] = features[0] - features[1]
+                cost[5] = features[4] - features[3]
+
 
             # # anchor text
             # if link.link_text in ["en", "Eng", "English", "Anglais", "fr", "Fra", "Français", "Francais"]:
