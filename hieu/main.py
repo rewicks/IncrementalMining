@@ -85,20 +85,20 @@ def main(args):
     def tryLinear(coeffs):
         ret = sum(trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs))
         print("SUM:", ret, "Params:", coeffs)
-        return ret
+        return -ret
 
     from skopt import gp_minimize
     res = gp_minimize(tryLinear,                  # the function to minimize
-                  [(-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (-5.0, 5.0), (0, 10.0)],      # the bounds on each dimension of x
+                  [(-10.0, 10.0), (-10.0, 10.0), (-10.0, 10.0), (-10.0, 10.0), (-10.0, 5.0), (-10.0, 10.0), (0, 100000.0)],      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
-                  n_calls=50,         # the number of evaluations of f
+                  n_calls=500,         # the number of evaluations of f
                   n_random_starts=5,  # the number of random initialization points
-                  noise=0.1**2,       # the noise level (optional)
+                  noise=0.1**4,       # the noise level (optional)
                   random_state=1234)   # the random seed
     print(res)
     print("x^*=%.4f, f(x^*)=%.4f" % (res.x[0], res.fun))
 
-    # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 10.0])
+    # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 9999999999.0])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
