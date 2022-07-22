@@ -59,7 +59,7 @@ class LinearDecider(Decider):
                 costs[5] = langCosts[2]
 
             # anchor text
-            if link.link_text in ["en", "Eng", "English", "fr", "Fra", "Français", "Francais"]:
+            if link.link_text in ["en", "Eng", "English", "Anglais", "fr", "Fra", "Français", "Francais"]:
                 costs[6] = 1
 
             #print("costs", costs)
