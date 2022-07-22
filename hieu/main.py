@@ -88,8 +88,13 @@ def main(args):
         return -ret
 
     from skopt import gp_minimize
+    range_bound = 100.0
+    num_coeff = 9
+    ranges = []
+    for x in range(num_coeff):
+        ranges.append((-range_bound, range_bound))
     res = gp_minimize(tryLinear,                  # the function to minimize
-                  [(-10.0, 10.0), (-10.0, 10.0), (-10.0, 10.0), (-10.0, 10.0), (-10.0, 5.0), (-10.0, 10.0), (0, 100000.0)],      # the bounds on each dimension of x
+                  ranges,      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
                   n_calls=500,         # the number of evaluations of f
                   n_random_starts=5,  # the number of random initialization points
