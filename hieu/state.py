@@ -1,7 +1,7 @@
 from collections import Counter
 from environment import *
 
-class State2():
+class State():
     def __init__(self, languages, link_queue_limit):
 
         # unless people protest I think a list of size k is
@@ -50,7 +50,7 @@ class State2():
 
 ######################################################################################
 def create_start_state_from_node(root, languages, link_queue_limit):
-    state = State2(languages, link_queue_limit=link_queue_limit)
+    state = State(languages, link_queue_limit=link_queue_limit)
 
     # update with the only crawled page
     root_document = MonolingualDocument(docid=root.urlId, langid=root.lang)
@@ -72,7 +72,7 @@ def transition_on_link(env, state, link_to_crawl):
     if crawled_child.lang != link_to_crawl.language:
         logging.info(f"Crawled child was in language {crawled_child.lang} but wanted to crawl {link_to_crawl.language}")
 
-    new_state = State2(languages=state.languages, link_queue_limit = state.link_queue_limit)
+    new_state = State(languages=state.languages, link_queue_limit = state.link_queue_limit)
 
     for li in state.visited_links:
         new_state.visited_links.add(li)
