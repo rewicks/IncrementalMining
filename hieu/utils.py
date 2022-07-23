@@ -1,3 +1,5 @@
+import os
+import pickle
 import editdistance
 import configparser
 
@@ -23,6 +25,7 @@ def GetLanguages(configFile):
         print("mysql load Languages")
         sqlconn = MySQL(configFile)
         languages = Languages(sqlconn)
+        os.makedirs("pickled_domains", exist_ok=True)
         with open(filePath, 'wb') as f:
             pickle.dump(languages, f)
     else:
