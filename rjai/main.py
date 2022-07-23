@@ -8,7 +8,7 @@ import numpy as np
 from collections import Counter
 import scipy.special
 
-from utils import MySQL, Languages
+from utils import MySQL, Languages, GetLanguages
 from environment import Env, GetEnv, Dummy, isParallel
 from state import *
 from decider import *
@@ -75,8 +75,7 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs =
 
 ######################################################################################
 def main(args):
-    sqlconn = MySQL(args.config_file)
-    languages = Languages(sqlconn)
+    languages = GetLanguages(args.config_file)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     # env = Dummy()
     env = GetEnv(args.config_file, languages, args.host_name)

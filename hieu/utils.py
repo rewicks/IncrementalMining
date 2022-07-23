@@ -16,6 +16,23 @@ class MySQL:
         self.mydb.autocommit = False
         self.mycursor = self.mydb.cursor(buffered=True)
 
+######################################################################################
+def GetLanguages(configFile):
+    filePath = 'pickled_domains/Languages'
+    if not os.path.exists(filePath):
+        print("mysql load Languages")
+        sqlconn = MySQL(configFile)
+        languages = Languages(sqlconn)
+        with open(filePath, 'wb') as f:
+            pickle.dump(languages, f)
+    else:
+        print("unpickle Languages")
+        with open(filePath, 'rb') as f:
+            languages = pickle.load(f)
+
+    return languages
+
+######################################################################################
 class Languages:
     def __init__(self, sqlconn):
         self.coll = {}
