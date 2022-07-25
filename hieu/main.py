@@ -74,7 +74,11 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs =
     return docs
 
 ######################################################################################
-def main(args):
+def infer(args):
+    pass
+
+######################################################################################
+def train(args):
     languages = GetLanguages(args.config_file)
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
     # env = Dummy()
@@ -104,8 +108,10 @@ def main(args):
 
     # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 9999999999.0])
 
-if __name__ == "__main__":
+######################################################################################
+def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--do', default = "train")
     #parser.add_argument('--algorithm', default="random")
     parser.add_argument('--quiet', action='store_true', default = False)
     parser.add_argument('--config-file', default="../config.ini")
@@ -121,4 +127,12 @@ if __name__ == "__main__":
         logger = logging.getLogger()
         logger.disabled = True
 
-    main(args)
+    if args.do == "train":
+        train(args)
+    elif args.do == "infer":
+        infer(args)
+    else:
+        abort("dunno")
+
+if __name__ == "__main__":
+    main()
