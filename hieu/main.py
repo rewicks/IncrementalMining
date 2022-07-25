@@ -116,7 +116,7 @@ def infer(args, languages, langIds):
         t = list(range(len(lLinear)))
 
         domain = tldextract.extract(host_name).domain
-        print(domain, sumRandom, sumLinear)
+        print(domain, sumLinear, sumRandom)
         plt.figure()
         plt.plot(t, lLinear, label='Linear')
         plt.plot(t, lRandom, label='Random')
