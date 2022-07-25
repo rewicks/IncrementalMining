@@ -122,7 +122,7 @@ def infer(args, languages, langIds):
         plt.plot(t, lRandom, label='Random')
         plt.legend()
         plt.title(domain)
-        plt.show()
+        plt.show(block=False)
 
         plt.savefig(domain + '.png')
         
