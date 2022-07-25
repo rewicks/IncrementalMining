@@ -14,7 +14,9 @@ from state import *
 from decider import *
 from matplotlib import pyplot as plt
 
-def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs = None):
+num_coeff = 6
+
+def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
     state = create_start_state_from_node(env.rootNode, langIds, linkQueueLimit)
 
     ep_reward = 0
@@ -74,13 +76,60 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs =
     return docs
 
 ######################################################################################
-def infer(args):
-    pass
+def infer(args, languages, langIds):
+    #print("args.coeffs", args.coeffs)
+    assert(args.coeffs is not None)
+    assert(len(args.coeffs) == num_coeff)
+    allhostNames = [#"http://www.buchmann.ch/",
+                    "http://vade-retro.fr/",
+                    "http://www.visitbritain.com/",
+                    "http://www.lespressesdureel.com/",
+                    "http://www.otc-cta.gc.ca/",
+                    "http://tagar.es/",
+                    "http://lacor.es/",
+                    "http://telasmos.org/",
+                    "http://www.haitilibre.com/",
+                    "http://legisquebec.gouv.qc.ca/",
+                    "http://hobby-france.com/",
+                    "http://www.al-fann.net/",
+                    "http://www.antique-prints.de/",
+                    "http://www.gamersyde.com/",
+                    "http://inter-pix.com/",
+                    "http://www.acklandsgrainger.com/",
+                    "http://www.predialparque.pt/",
+                    "http://carta.ro/",
+                    "http://www.restopages.be/",
+                    "http://www.burnfateasy.info/",
+                    "http://www.bedandbreakfast.eu/",
+                    "http://ghc.freeguppy.org/",
+                    "http://www.bachelorstudies.fr/",
+                    "http://chopescollection.be/",
+                    "http://www.lavery.ca/",
+                    "http://www.thecanadianencyclopedia.ca/",
+                    #"http://www.vistastamps.com/",
+                    "http://www.linker-kassel.com/",
+                    "http://www.enterprise.fr/"]
+    for host_name in allhostNames:
+        print(host_name)
+        env = GetEnv(args.config_file, languages, host_name)
+        lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs)
+        sumRandom = sum(lRandom)
+        lLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs)
+        sumLinear = sum(lLinear)
+        assert(len(lRandom) == len(lLinear))
+        t = list(range(len(lLinear)))
+
+        print(sumRandom, sumLinear)
+        plt.figure()
+        plt.plot(t, lRandom, label='Random')
+        plt.plot(t, lLinear, label='Linear')
+        plt.legend()
+        plt.show()
+        
+
 
 ######################################################################################
-def train(args):
-    languages = GetLanguages(args.config_file)
-    langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
+def train(args, languages, langIds):
     # env = Dummy()
     env = GetEnv(args.config_file, languages, args.host_name)
     #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
@@ -92,10 +141,10 @@ def train(args):
 
     from skopt import gp_minimize
     range_bound = 100.0
-    num_coeff = 6
     ranges = []
     for x in range(num_coeff):
         ranges.append((-range_bound, range_bound))
+
     res = gp_minimize(tryLinear,                  # the function to minimize
                   ranges,      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
@@ -119,7 +168,8 @@ def main():
     parser.add_argument('--lang-pair', default="en-fr")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
     parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
-
+    parser.add_argument("--co-efficients", dest="coeffs", nargs=6, help="co-efficients. Only for infer", type=float, default=None)
+                            
     args = parser.parse_args()
     #print("cpu", args.cpu)
     #exit(1)
@@ -127,10 +177,13 @@ def main():
         logger = logging.getLogger()
         logger.disabled = True
 
+    languages = GetLanguages(args.config_file)
+    langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
+
     if args.do == "train":
-        train(args)
+        train(args, languages, langIds)
     elif args.do == "infer":
-        infer(args)
+        infer(args, languages, langIds)
     else:
         abort("dunno")
 

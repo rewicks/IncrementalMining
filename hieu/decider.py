@@ -17,10 +17,11 @@ class RandomDecider(Decider):
         if len(state.link_queue) > 0:
             ret.fill(1./len(state.link_queue))
         else:
-            return np.empty([])
+            pass
+        return ret
 
 class LinearDecider(Decider):
-    def __init__(self, coeffs = np.array([5, 5, 5, 5, 5, 5])):
+    def __init__(self, coeffs):
         self.coefficients = coeffs
 
     def ChooseLink(self, state, probs):
