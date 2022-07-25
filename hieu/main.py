@@ -7,6 +7,7 @@ import argparse
 import numpy as np
 from collections import Counter
 import scipy.special
+import tldextract
 
 from utils import MySQL, Languages, GetLanguages
 from environment import Env, GetEnv, Dummy, isParallel
@@ -34,15 +35,10 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
         probs = decider.CalcProbs(state)
         if probs is not None:
             link = decider.ChooseLink(state, probs)
-
-            if link is None: # No more links left to crawl
-                if not quiet:
-                    print("Exhausted all links in the queue. Nothing left to do")
-                break
+            assert(link is not None)
 
             new_state = transition_on_link(env, state, link)
-            if new_state is None:
-                break
+            assert(new_state is not None)
         else:
             break
 
@@ -112,19 +108,23 @@ def infer(args, languages, langIds):
     for host_name in allhostNames:
         print(host_name)
         env = GetEnv(args.config_file, languages, host_name)
-        lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs)
-        sumRandom = sum(lRandom)
         lLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs)
         sumLinear = sum(lLinear)
+        lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs)
+        sumRandom = sum(lRandom)
         assert(len(lRandom) == len(lLinear))
         t = list(range(len(lLinear)))
 
-        print(sumRandom, sumLinear)
+        domain = tldextract.extract(host_name).domain
+        print(domain, sumRandom, sumLinear)
         plt.figure()
-        plt.plot(t, lRandom, label='Random')
         plt.plot(t, lLinear, label='Linear')
+        plt.plot(t, lRandom, label='Random')
         plt.legend()
+        plt.title(domain)
         plt.show()
+
+        plt.savefig(domain + '.png')
         
 
 

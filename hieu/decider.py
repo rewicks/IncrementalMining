@@ -4,21 +4,19 @@ import scipy.special
 
 class Decider:
     def ChooseLink(self, state, probs):
-        if len(state.link_queue) > 0:
-            link = np.random.choice(state.link_queue, 1, p=probs)
-            #print("link", link)
-            return link[0]
-        else:
-            return None
+        assert(len(state.link_queue) > 0)
+        link = np.random.choice(state.link_queue, 1, p=probs)
+        #print("link", link)
+        return link[0]
 
 class RandomDecider(Decider):
     def CalcProbs(self, state):
-        ret = np.empty([len(state.link_queue)])
         if len(state.link_queue) > 0:
+            ret = np.empty([len(state.link_queue)])
             ret.fill(1./len(state.link_queue))
+            return ret
         else:
-            pass
-        return ret
+            return None
 
 class LinearDecider(Decider):
     def __init__(self, coeffs):
