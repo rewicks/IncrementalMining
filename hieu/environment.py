@@ -113,7 +113,7 @@ def isParallel(env, doc1, doc2):
 
     if doc1_node.alignedNode is not None and doc1_node.alignedNode.urlId == doc2_node.urlId:
         assert(doc2_node.alignedNode is not None)
-        assert(doc2_node.alignedNode.urlId == doc1_node.urlId)
+        #assert(doc2_node.alignedNode.urlId == doc1_node.urlId)
         return True
     return False
 

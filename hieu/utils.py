@@ -73,7 +73,7 @@ def FindMinEditDistance(candidate_url, existing_urls):
     return min_dist #min_dist_idx
 
 ######################################################################################
-allhostNames = [#"http://www.buchmann.ch/",
+allhostNames = ["http://www.buchmann.ch/",
                 "http://vade-retro.fr/",
                 "http://www.visitbritain.com/",
                 "http://www.lespressesdureel.com/",
