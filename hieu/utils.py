@@ -71,3 +71,34 @@ def FindMinEditDistance(candidate_url, existing_urls):
             min_dist = distances[i]
             min_dist_idx = i
     return min_dist #min_dist_idx
+
+######################################################################################
+allhostNames = [#"http://www.buchmann.ch/",
+                "http://vade-retro.fr/",
+                "http://www.visitbritain.com/",
+                "http://www.lespressesdureel.com/",
+                "http://www.otc-cta.gc.ca/",
+                "http://tagar.es/",
+                "http://lacor.es/",
+                "http://telasmos.org/",
+                "http://www.haitilibre.com/",
+                "http://legisquebec.gouv.qc.ca/",
+                "http://hobby-france.com/",
+                "http://www.al-fann.net/",
+                "http://www.antique-prints.de/",
+                "http://www.gamersyde.com/",
+                "http://inter-pix.com/",
+                "http://www.acklandsgrainger.com/",
+                "http://www.predialparque.pt/",
+                "http://carta.ro/",
+                "http://www.restopages.be/",
+                "http://www.burnfateasy.info/",
+                "http://www.bedandbreakfast.eu/",
+                "http://ghc.freeguppy.org/",
+                "http://www.bachelorstudies.fr/",
+                "http://chopescollection.be/",
+                "http://www.lavery.ca/",
+                "http://www.thecanadianencyclopedia.ca/",
+                #"http://www.vistastamps.com/",
+                "http://www.linker-kassel.com/",
+                "http://www.enterprise.fr/"]

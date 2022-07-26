@@ -9,7 +9,7 @@ from collections import Counter
 import scipy.special
 import tldextract
 
-from utils import MySQL, Languages, GetLanguages
+from utils import MySQL, Languages, GetLanguages, allhostNames
 from environment import Env, GetEnv, Dummy, isParallel
 from state import *
 from decider import *
@@ -76,35 +76,6 @@ def infer(args, languages, langIds):
     #print("args.coeffs", args.coeffs)
     assert(args.coeffs is not None)
     assert(len(args.coeffs) == num_coeff)
-    allhostNames = [#"http://www.buchmann.ch/",
-                    "http://vade-retro.fr/",
-                    "http://www.visitbritain.com/",
-                    "http://www.lespressesdureel.com/",
-                    "http://www.otc-cta.gc.ca/",
-                    "http://tagar.es/",
-                    "http://lacor.es/",
-                    "http://telasmos.org/",
-                    "http://www.haitilibre.com/",
-                    "http://legisquebec.gouv.qc.ca/",
-                    "http://hobby-france.com/",
-                    "http://www.al-fann.net/",
-                    "http://www.antique-prints.de/",
-                    "http://www.gamersyde.com/",
-                    "http://inter-pix.com/",
-                    "http://www.acklandsgrainger.com/",
-                    "http://www.predialparque.pt/",
-                    "http://carta.ro/",
-                    "http://www.restopages.be/",
-                    "http://www.burnfateasy.info/",
-                    "http://www.bedandbreakfast.eu/",
-                    "http://ghc.freeguppy.org/",
-                    "http://www.bachelorstudies.fr/",
-                    "http://chopescollection.be/",
-                    "http://www.lavery.ca/",
-                    "http://www.thecanadianencyclopedia.ca/",
-                    #"http://www.vistastamps.com/",
-                    "http://www.linker-kassel.com/",
-                    "http://www.enterprise.fr/"]
     for host_name in allhostNames:
         print(host_name)
         env = GetEnv(args.config_file, languages, host_name)
@@ -122,7 +93,7 @@ def infer(args, languages, langIds):
         plt.plot(t, lRandom, label='Random')
         plt.legend()
         plt.title(domain)
-        plt.show(block=False)
+        #plt.show(block=False)
 
         plt.savefig(domain + '.png')
         
