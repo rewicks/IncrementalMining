@@ -103,7 +103,7 @@ def train(args, languages, langIds, env):
     # env = Dummy()
 
     def tryLinear(coeffs):
-        ret = sum(trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs))
+        ret = sum(trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs))
         print("SUM:", ret, "Params:", coeffs)
         return -ret
 
@@ -141,7 +141,7 @@ def main():
     #parser.add_argument('--algorithm', default="random")
     parser.add_argument('--quiet', action='store_true', default = False)
     parser.add_argument('--config-file', default="../config.ini")
-    parser.add_argument('--train-hosts', default="http://www.visitbritain.com/")
+    parser.add_argument('--train-hosts', nargs="+", default=["http://www.visitbritain.com/"])
     parser.add_argument('--test-hosts', nargs="+", default=allhostNames)
     parser.add_argument('--lang-pair', default="en-fr")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
@@ -159,7 +159,9 @@ def main():
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
 
     if args.do == "train":
-        env = GetEnv(args.config_file, languages, args.train_hosts)
+        print("args.train_hosts", args.train_hosts)
+        envs = GetEnvs(args.train_hosts, languages, args.config_file)
+        env = envs[0]
         #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
         train(args, languages, langIds, env)
     elif args.do == "infer":
