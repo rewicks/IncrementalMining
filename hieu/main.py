@@ -71,6 +71,10 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
         print("Mean AUC for all crawl histories: ", np.mean([np.sum(x) for x in crawl_histories]))
     return docs
 
+def trajectories(envs, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
+    for host, env in envs:
+        trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs)
+
 ######################################################################################
 def infer(args, languages, langIds, envs):
     #print("args.coeffs", args.coeffs)
