@@ -132,7 +132,8 @@ def main():
     #parser.add_argument('--algorithm', default="random")
     parser.add_argument('--quiet', action='store_true', default = False)
     parser.add_argument('--config-file', default="../config.ini")
-    parser.add_argument('--host-name', default="http://www.visitbritain.com/")
+    parser.add_argument('--train-hosts', default="http://www.visitbritain.com/")
+    parser.add_argument('--test-hosts', nargs="+", default=allhostNames)
     parser.add_argument('--lang-pair', default="en-fr")
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
     parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
@@ -149,12 +150,12 @@ def main():
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
 
     if args.do == "train":
-        env = GetEnv(args.config_file, languages, args.host_name)
+        env = GetEnv(args.config_file, languages, args.train_hosts)
         #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
         train(args, languages, langIds, env)
     elif args.do == "infer":
         envs = []
-        for host_name in allhostNames:
+        for host_name in args.test_hosts:
             print(host_name)
             env = GetEnv(args.config_file, languages, host_name)
             t = (host_name, env)
