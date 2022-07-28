@@ -126,6 +126,15 @@ def train(args, languages, langIds, env):
     # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 9999999999.0])
 
 ######################################################################################
+def GetEnvs(hosts, languages, config_file):
+    envs = []
+    for host_name in hosts:
+        print(host_name)
+        env = GetEnv(config_file, languages, host_name)
+        t = (host_name, env)
+        envs.append(t)
+    return envs
+    
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--do', default = "train")
@@ -154,12 +163,7 @@ def main():
         #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
         train(args, languages, langIds, env)
     elif args.do == "infer":
-        envs = []
-        for host_name in args.test_hosts:
-            print(host_name)
-            env = GetEnv(args.config_file, languages, host_name)
-            t = (host_name, env)
-            envs.append(t)
+        envs = GetEnvs(args.test_hosts, languages, args.config_file)
         infer(args, languages, langIds, envs)
     else:
         abort("dunno")
