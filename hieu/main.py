@@ -72,13 +72,12 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
     return docs
 
 ######################################################################################
-def infer(args, languages, langIds):
+def infer(args, languages, langIds, envs):
     #print("args.coeffs", args.coeffs)
     assert(args.coeffs is not None)
     assert(len(args.coeffs) == num_coeff)
-    for host_name in allhostNames:
-        print(host_name)
-        env = GetEnv(args.config_file, languages, host_name)
+
+    for host_name, env in envs:
         lLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs)
         sumLinear = sum(lLinear)
         lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs)
@@ -100,10 +99,8 @@ def infer(args, languages, langIds):
 
 
 ######################################################################################
-def train(args, languages, langIds):
+def train(args, languages, langIds, env):
     # env = Dummy()
-    env = GetEnv(args.config_file, languages, args.host_name)
-    #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
 
     def tryLinear(coeffs):
         ret = sum(trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs))
@@ -152,9 +149,17 @@ def main():
     langIds = [languages.GetLang(args.lang_pair.split('-')[0]), languages.GetLang(args.lang_pair.split('-')[1])] 
 
     if args.do == "train":
-        train(args, languages, langIds)
+        env = GetEnv(args.config_file, languages, args.host_name)
+        #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
+        train(args, languages, langIds, env)
     elif args.do == "infer":
-        infer(args, languages, langIds)
+        envs = []
+        for host_name in allhostNames:
+            print(host_name)
+            env = GetEnv(args.config_file, languages, host_name)
+            t = (host_name, env)
+            envs.append(t)
+        infer(args, languages, langIds, envs)
     else:
         abort("dunno")
 
