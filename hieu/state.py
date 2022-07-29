@@ -70,8 +70,9 @@ def create_start_state_from_node(root, languages, link_queue_limit):
 def transition_on_link(env, state, link_to_crawl):
     crawled_child = env.crawl_child(link_to_crawl.id)
     if crawled_child.lang != link_to_crawl.language:
-        logging.info(f"Crawled child was in language {crawled_child.lang} but wanted to crawl {link_to_crawl.language}")
-
+        #logging.info(f"Crawled child was in language {crawled_child.lang} but wanted to crawl {link_to_crawl.language}")
+        pass
+    
     new_state = State(languages=state.languages, link_queue_limit = state.link_queue_limit)
 
     for li in state.visited_links:

@@ -120,7 +120,7 @@ def train(args, languages, langIds, env):
     res = gp_minimize(tryLinear,                  # the function to minimize
                   ranges,      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
-                  n_calls=500,         # the number of evaluations of f
+                  n_calls=10,         # the number of evaluations of f
                   n_random_starts=5,  # the number of random initialization points
                   noise=0.1**4,       # the noise level (optional)
                   random_state=1234)   # the random seed
