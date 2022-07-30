@@ -120,7 +120,7 @@ def train(args, languages, langIds, env):
     res = gp_minimize(tryLinear,                  # the function to minimize
                   ranges,      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
-                  n_calls=20,         # the number of evaluations of f
+                  n_calls=args.numIterations,         # the number of evaluations of f
                   n_initial_points=5,  # the number of random initialization points
                   noise="gaussian", # 0.1**4,       # the noise level (optional)
                   random_state=None)   # the random seed
@@ -151,7 +151,10 @@ def main():
     parser.add_argument('--link-queue-limit', dest="linkQueueLimit", type=int, default=10000000, help="Maximum size of buckets of links")
     parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
     parser.add_argument("--co-efficients", dest="coeffs", nargs=6, help="co-efficients. Only for infer", type=float, default=None)
+    parser.add_argument("--num-iterations", dest="numIterations", type=int, default=10, help="Numer of training iterations")
                             
+                            
+
     args = parser.parse_args()
     #print("cpu", args.cpu)
     #exit(1)
