@@ -51,15 +51,15 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
 
         state = new_state
 
-    if not quiet:
-        print(f"Reward: {ep_reward}")
-        print(f"Documents: {','.join([str(x) for x in docs])}")
+    #if not quiet:
+    #    print(f"Documents: {','.join([str(x) for x in docs])}")
 
     crawl_histories = []
     for x in range(1):
         crawl_histories.append(docs)
     
     if not quiet:
+        print(f"Reward: {ep_reward}")
         print("CRAWL HISTORIES")
         for x in crawl_histories:
             print(",".join([str(y) for y in x]))
@@ -120,12 +120,12 @@ def train(args, languages, langIds, env):
     res = gp_minimize(tryLinear,                  # the function to minimize
                   ranges,      # the bounds on each dimension of x
                   acq_func="EI",      # the acquisition function
-                  n_calls=10,         # the number of evaluations of f
-                  n_random_starts=5,  # the number of random initialization points
-                  noise=0.1**4,       # the noise level (optional)
-                  random_state=1234)   # the random seed
-    print(res)
-    print("x^*=%.4f, f(x^*)=%.4f" % (res.x[0], res.fun))
+                  n_calls=20,         # the number of evaluations of f
+                  n_initial_points=5,  # the number of random initialization points
+                  noise="gaussian", # 0.1**4,       # the noise level (optional)
+                  random_state=None)   # the random seed
+    print("x=", res.x)
+    print("f(x^*)=%.4f" % (res.fun))
 
     # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 9999999999.0])
 
