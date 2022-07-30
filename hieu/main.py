@@ -17,12 +17,11 @@ from matplotlib import pyplot as plt
 
 num_coeff = 6
 
-def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
+def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, gamma):
     state = create_start_state_from_node(env.rootNode, langIds, linkQueueLimit)
 
     ep_reward = 0
     discount = 1.0
-    gamma = 0.95
     docs = []
     if algorithm == 'random':
         decider = RandomDecider()
@@ -71,9 +70,9 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
         print("Mean AUC for all crawl histories: ", np.mean([np.sum(x) for x in crawl_histories]))
     return docs
 
-def trajectories(envs, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs):
+def trajectories(envs, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, gamma):
     for host, env in envs:
-        trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs)
+        trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, gamma)
 
 ######################################################################################
 def infer(args, languages, langIds, envs):
@@ -82,9 +81,9 @@ def infer(args, languages, langIds, envs):
     assert(len(args.coeffs) == num_coeff)
 
     for host_name, env in envs:
-        lLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs)
+        lLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs, args.gamma)
         sumLinear = sum(lLinear)
-        lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs)
+        lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs, args.gamma)
         sumRandom = sum(lRandom)
         assert(len(lRandom) == len(lLinear))
         t = list(range(len(lLinear)))
@@ -107,7 +106,8 @@ def train(args, languages, langIds, env):
     # env = Dummy()
 
     def tryLinear(coeffs):
-        ret = sum(trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs))
+        docs = trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
+        ret = sum(docs)
         print("SUM:", ret, "Params:", coeffs)
         return -ret
 
@@ -152,9 +152,8 @@ def main():
     parser.add_argument('--max-step', dest="maxStep", type=int, default=10000000, help="Maximum number of steps in trajectory")
     parser.add_argument("--co-efficients", dest="coeffs", nargs=6, help="co-efficients. Only for infer", type=float, default=None)
     parser.add_argument("--num-iterations", dest="numIterations", type=int, default=10, help="Numer of training iterations")
+    parser.add_argument('--gamma', type=float, default=0.999, help="Reward discount")                            
                             
-                            
-
     args = parser.parse_args()
     #print("cpu", args.cpu)
     #exit(1)
