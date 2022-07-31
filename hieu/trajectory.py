@@ -57,8 +57,8 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, 
     return ep_reward, auc, docs
 
 def trajectories(envs, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, gamma):
-    ep_rewardAll = 0
-    aucAll = 0
+    ep_rewardAll = 0.0
+    aucAll = 0.0
     for host, env in envs:
         ep_reward, auc, _ = trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, gamma)
         ep_rewardAll += ep_reward
