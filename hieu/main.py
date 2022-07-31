@@ -40,11 +40,11 @@ def infer(args, languages, langIds, envs):
         plt.savefig(domain + '.png')
         
 ######################################################################################
-def train(args, languages, langIds, env):
+def train(args, languages, langIds, envs):
     # env = Dummy()
 
     def tryLinear(coeffs):
-        ep_reward, auc, _ = trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
+        ep_reward, auc = trajectories(envs, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
         print("auc", auc, "ep_reward", ep_reward, "Params", coeffs)
         return -auc
 
@@ -112,9 +112,8 @@ def main():
     if args.do == "train":
         print("args.train_hosts", args.train_hosts)
         envs = GetEnvs(args.train_hosts, languages, args.config_file)
-        env = envs[0]
         #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
-        train(args, languages, langIds, env)
+        train(args, languages, langIds, envs)
     elif args.do == "infer":
         envs = GetEnvs(args.test_hosts, languages, args.config_file)
         infer(args, languages, langIds, envs)
