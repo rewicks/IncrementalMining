@@ -29,6 +29,15 @@ def GetEnvs(configFile, languages, urls):
         ret.append(env)
     return ret
 
+def GetEnvsWithHost(config_file, languages, hosts):
+    envs = []
+    for host_name in hosts:
+        print(host_name)
+        env = GetEnv(config_file, languages, host_name)
+        t = (host_name, env)
+        envs.append(t)
+    return envs
+
 ######################################################################################
 def GetEnv(configFile, languages, url):
     '''

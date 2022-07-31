@@ -11,7 +11,7 @@ import tldextract
 from matplotlib import pyplot as plt
 
 from utils import MySQL, Languages, GetLanguages, allhostNames
-from environment import Env, GetEnv, Dummy, isParallel
+from environment import Env, GetEnv, GetEnvsWithHost, Dummy, isParallel
 from trajectory import *
 
 num_coeff = 6
@@ -73,16 +73,7 @@ def train(args, languages, langIds, envs):
 
     # docsLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 9999999999.0])
 
-######################################################################################
-def GetEnvs(hosts, languages, config_file):
-    envs = []
-    for host_name in hosts:
-        print(host_name)
-        env = GetEnv(config_file, languages, host_name)
-        t = (host_name, env)
-        envs.append(t)
-    return envs
-    
+######################################################################################    
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--do', default = "train")
@@ -111,11 +102,11 @@ def main():
 
     if args.do == "train":
         print("args.train_hosts", args.train_hosts)
-        envs = GetEnvs(args.train_hosts, languages, args.config_file)
+        envs = GetEnvsWithHost(args.config_file, languages, args.train_hosts)
         #docsRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet)
         train(args, languages, langIds, envs)
     elif args.do == "infer":
-        envs = GetEnvs(args.test_hosts, languages, args.config_file)
+        envs = GetEnvsWithHost(args.config_file, languages, args.test_hosts)
         infer(args, languages, langIds, envs)
     else:
         abort("dunno")
