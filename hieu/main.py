@@ -68,7 +68,8 @@ def trajectory(env, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, 
             print(sum(x))
 
         print("Mean AUC for all crawl histories: ", np.mean([np.sum(x) for x in crawl_histories]))
-    return docs
+    auc = sum(docs)
+    return ep_reward, auc, docs
 
 def trajectories(envs, langIds, linkQueueLimit, algorithm, maxStep, quiet, coeffs, gamma):
     for host, env in envs:
@@ -81,18 +82,16 @@ def infer(args, languages, langIds, envs):
     assert(len(args.coeffs) == num_coeff)
 
     for host_name, env in envs:
-        lLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs, args.gamma)
-        sumLinear = sum(lLinear)
-        lRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs, args.gamma)
-        sumRandom = sum(lRandom)
-        assert(len(lRandom) == len(lLinear))
-        t = list(range(len(lLinear)))
+        resLinear = trajectory(env, langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, args.coeffs, args.gamma)
+        resRandom = trajectory(env, langIds, args.linkQueueLimit, 'random', args.maxStep, args.quiet, args.coeffs, args.gamma)
+        assert(len(resLinear[2]) == len(resRandom[2]))
+        t = list(range(len(resLinear[2])))
 
         domain = tldextract.extract(host_name).domain
-        print(domain, sumLinear, sumRandom)
+        print(domain, resLinear[1], resRandom[1])
         plt.figure()
-        plt.plot(t, lLinear, label='Linear')
-        plt.plot(t, lRandom, label='Random')
+        plt.plot(t, resLinear[2], label='Linear')
+        plt.plot(t, resRandom[2], label='Random')
         plt.legend()
         plt.title(domain)
         #plt.show(block=False)
@@ -106,10 +105,9 @@ def train(args, languages, langIds, env):
     # env = Dummy()
 
     def tryLinear(coeffs):
-        docs = trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
-        ret = sum(docs)
-        print("SUM:", ret, "Params:", coeffs)
-        return -ret
+        ep_reward, auc, docs = trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
+        print("auc", auc, "ep_reward", ep_reward, "Params", coeffs)
+        return -auc
 
     from skopt import gp_minimize, dummy_minimize
     range_bound = 100.0
