@@ -16,7 +16,6 @@ from trajectory import *
 
 num_coeff = 6
 
-
 ######################################################################################
 def infer(args, languages, langIds, envs):
     #print("args.coeffs", args.coeffs)
@@ -40,14 +39,12 @@ def infer(args, languages, langIds, envs):
 
         plt.savefig(domain + '.png')
         
-
-
 ######################################################################################
 def train(args, languages, langIds, env):
     # env = Dummy()
 
     def tryLinear(coeffs):
-        ep_reward, auc, docs = trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
+        ep_reward, auc, _ = trajectory(env[1], langIds, args.linkQueueLimit, 'linear', args.maxStep, args.quiet, coeffs, args.gamma)
         print("auc", auc, "ep_reward", ep_reward, "Params", coeffs)
         return -auc
 
