@@ -88,7 +88,7 @@ def main():
     parser.add_argument("--num-iterations", dest="numIterations", type=int, default=10, help="Numer of training iterations")
     parser.add_argument('--gamma', type=float, default=0.999, help="Reward discount")                            
     parser.add_argument('--minimize-type', dest='minimizeType', default='gp', help="gp=Bayesian optimization using Gaussian Processes. dummy=Random search by uniform sampling")                            
-    parser.add_argument('--range-bound', dest='rangeBound', nargs=2, default=[-100, 100], help="Range of co-efficients")                            
+    parser.add_argument('--range-bound', dest='rangeBound', type=float, nargs=2, default=[-100.0, 100.0], help="Range of co-efficients")                            
                             
     args = parser.parse_args()
     #print("cpu", args.cpu)
