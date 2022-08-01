@@ -49,10 +49,9 @@ def train(args, languages, langIds, envs):
         return -auc
 
     from skopt import gp_minimize, dummy_minimize
-    range_bound = 100.0
     ranges = []
     for x in range(num_coeff):
-        ranges.append((-range_bound, range_bound))
+        ranges.append((args.rangeBound[0], args.rangeBound[1]))
 
     if args.minimizeType == 'gp':
         res = gp_minimize(tryLinear,                  # the function to minimize
@@ -89,6 +88,7 @@ def main():
     parser.add_argument("--num-iterations", dest="numIterations", type=int, default=10, help="Numer of training iterations")
     parser.add_argument('--gamma', type=float, default=0.999, help="Reward discount")                            
     parser.add_argument('--minimize-type', dest='minimizeType', default='gp', help="gp=Bayesian optimization using Gaussian Processes. dummy=Random search by uniform sampling")                            
+    parser.add_argument('--range-bound', dest='rangeBound', nargs=2, default=[-100, 100], help="Range of co-efficients")                            
                             
     args = parser.parse_args()
     #print("cpu", args.cpu)
